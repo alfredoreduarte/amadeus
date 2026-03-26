@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aprende Amadeus - Simulador Interactivo</title>
+  <meta name="description" content="Domina el sistema Amadeus con ejercicios interactivos. Practica comandos reales en un simulador sin riesgo.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/terminal.css">
+</head>
+<body>
+
+  <!-- Hero / Landing -->
+  <div id="hero">
+    <div class="hero-content">
+      <div class="hero-badge anim" style="--d:0">SIMULADOR INTERACTIVO</div>
+      <h1 class="hero-title anim" style="--d:1">Aprende Amadeus</h1>
+      <p class="hero-subtitle anim" style="--d:2">Domina el sistema de reservas que usan las agencias de viaje en todo el mundo.</p>
+
+      <div class="decoder anim" style="--d:3" id="decoder">
+        <div class="decoder-command" id="decoder-command"><!--
+          --><span class="seg" data-segment="action"><span class="seg-chars">AN</span><span class="seg-label">Buscar</span></span><!--
+          --><span class="seg" data-segment="day"><span class="seg-chars">20</span><span class="seg-label">D&iacute;a</span></span><!--
+          --><span class="seg" data-segment="month"><span class="seg-chars">MAR</span><span class="seg-label">Mes</span></span><!--
+          --><span class="seg" data-segment="origin"><span class="seg-chars">MIA</span><span class="seg-label">Miami</span></span><!--
+          --><span class="seg" data-segment="dest"><span class="seg-chars">JFK</span><span class="seg-label">Nueva York</span></span><!--
+        --></div>
+      </div>
+
+      <div class="hero-arrow anim" style="--d:4">
+        <span class="hero-arrow-label">Copia el texto letra por letra</span>
+        <span class="hero-chevron"></span>
+      </div>
+
+      <div class="hero-input-area anim" style="--d:5">
+        <div class="hero-input-wrapper" id="hero-input-wrapper">
+          <span class="hero-prompt">&gt;</span>
+          <input type="text" id="hero-input" placeholder="AN20MARMIAJFK" autocomplete="off" spellcheck="false" autofocus>
+        </div>
+        <p class="hero-hint">Cuando termines, presiona la tecla Enter &#9166; de tu teclado</p>
+      </div>
+
+      <div class="hero-features anim" style="--d:6">
+        <span>5 ejercicios guiados</span>
+        <span class="hero-dot"></span>
+        <span>Escenarios reales</span>
+        <span class="hero-dot"></span>
+        <span>Practica sin riesgo</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Terminal (hidden until first command) -->
+  <div id="terminal" class="hidden">
+    <div id="output"></div>
+    <div id="input-line">
+      <span class="prompt">&gt;</span>
+      <input type="text" id="command-input" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+
+  <button id="help-toggle" class="hidden" title="Referencia Rapida">?</button>
+
+  <div id="help-panel">
+    <div class="help-header">
+      <h3>REFERENCIA RAPIDA</h3>
+      <button id="help-close">&times;</button>
+    </div>
+    <div class="help-content">
+      <h4>DISPONIBILIDAD</h4>
+      <p><code>AN20MARMIAJFK</code> Buscar vuelos</p>
+      <p><code>AN20MARMIAJFK/AAA</code> Filtrar por aerolinea</p>
+
+      <h4>VENTA</h4>
+      <p><code>SS1Y1</code> Vender 1 asiento, clase Y, linea 1</p>
+
+      <h4>ELEMENTOS DEL PNR</h4>
+      <p><code>NM1SMITH/JOHN MR</code> Agregar pasajero</p>
+      <p><code>APNYC 212 555 1234</code> Agregar telefono</p>
+      <p><code>APE-USER@EMAIL.COM</code> Agregar email</p>
+      <p><code>TKOK</code> Arreglo de ticketing</p>
+      <p><code>RFAGENT</code> Received from</p>
+
+      <h4>ACCIONES DEL PNR</h4>
+      <p><code>ET</code> / <code>ER</code> Guardar / Guardar y mostrar</p>
+      <p><code>RT</code> Mostrar PNR actual</p>
+      <p><code>RTABCDEF</code> Recuperar por localizador</p>
+      <p><code>IG</code> Ignorar (cancelar cambios)</p>
+
+      <h4>TARIFAS</h4>
+      <p><code>FQDMIAJFK/D20MAR</code> Consultar tarifas</p>
+      <p><code>FXP</code> Cotizar PNR actual</p>
+
+      <h4>MODIFICACIONES</h4>
+      <p><code>XI</code> Cancelar todos los segmentos</p>
+      <p><code>XE5</code> Cancelar elemento 5</p>
+
+      <h4>INFORMACION</h4>
+      <p><code>DNNYC</code> Decodificar ciudad/aeropuerto</p>
+      <p><code>DANAA</code> Decodificar aerolinea</p>
+      <p><code>HEALL</code> Lista de comandos</p>
+
+      <h4>CURSO</h4>
+      <p><code>TRAINING</code> Menu de ejercicios</p>
+      <p><code>TRAINING 1</code> Iniciar ejercicio 1</p>
+      <p><code>PISTA</code> Ayuda en el paso actual</p>
+      <p><code>SIGUIENTE</code> Saltar paso</p>
+
+      <h4>OTROS</h4>
+      <p><code>MD</code> / <code>MU</code> Scroll abajo/arriba</p>
+      <p><code>CLEAR</code> Limpiar pantalla</p>
+    </div>
+  </div>
+
+  <!-- Paywall modal -->
+  <div id="paywall-overlay" class="hidden">
+    <div id="paywall-modal">
+      <h2>Desbloquea el Curso Completo</h2>
+      <p>Accede a todos los ejercicios y domina Amadeus a tu ritmo.</p>
+      <div class="paywall-price">$3 <span>USD</span></div>
+      <p class="paywall-detail">Pago unico &middot; Acceso permanente</p>
+      <a id="paywall-buy" href="https://buy.stripe.com/REPLACE_WITH_YOUR_LINK" target="_blank" class="paywall-btn">Comprar Acceso</a>
+      <button id="paywall-close" class="paywall-close-btn">Volver</button>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/amadeus.js"></script>
+  <script src="js/training.js"></script>
+  <script src="js/terminal.js"></script>
+</body>
+</html>
