@@ -26,6 +26,16 @@ var DATA = {
     'AC': { name: 'AIR CANADA',               country: 'CA' },
     'SK': { name: 'SCANDINAVIAN AIRLINES',    country: 'SE' },
     'AZ': { name: 'ITA AIRWAYS',              country: 'IT' },
+    'AR': { name: 'AEROLINEAS ARGENTINAS',   country: 'AR' },
+    'AD': { name: 'AZUL BRAZILIAN AIRLINES',  country: 'BR' },
+    'G3': { name: 'GOL LINHAS AEREAS',       country: 'BR' },
+    'OB': { name: 'BOLIVIANA DE AVIACION',   country: 'BO' },
+    'PZ': { name: 'LATAM AIRLINES PARAGUAY', country: 'PY' },
+    'ZP': { name: 'PARANAIR',               country: 'PY' },
+    'TP': { name: 'TAP AIR PORTUGAL',        country: 'PT' },
+    'UX': { name: 'AIR EUROPA',             country: 'ES' },
+    'JA': { name: 'JETSMART',               country: 'CL' },
+    'H2': { name: 'SKY AIRLINE',             country: 'CL' },
   },
 
   // ---- Airports & cities ----
@@ -63,6 +73,10 @@ var DATA = {
     'PTY': { name: 'PANAMA CITY TOCUMEN',              city: 'PTY', country: 'PA' },
     'YYZ': { name: 'TORONTO PEARSON INTL',             city: 'YTO', country: 'CA' },
     'YUL': { name: 'MONTREAL TRUDEAU INTL',            city: 'YMQ', country: 'CA' },
+    'ASU': { name: 'ASUNCION SILVIO PETTIROSSI', city: 'ASU', country: 'PY' },
+    'VVI': { name: 'VIRU VIRU INTL',              city: 'VVI', country: 'BO' },
+    'LPB': { name: 'LA PAZ EL ALTO',              city: 'LPB', country: 'BO' },
+    'LIS': { name: 'LISBON PORTELA',              city: 'LIS', country: 'PT' },
   },
 
   // City codes → primary airport
@@ -187,6 +201,27 @@ var DATA = {
 
     // --- CUN - MIA ---
     { al:'AA', fn:'1478',from:'CUN', to:'MIA', dep:'1400', arr:'1800', dur:'2:30', eq:'738', classes:{J:5,C:3,D:1,Y:9,B:9,M:9,K:6} },
+
+    // --- ASU - MAD ---
+    { al:'IB', fn:'6824',from:'ASU', to:'MAD', dep:'2200', arr:'1400', dur:'11:00', eq:'332', classes:{J:4,C:2,D:0,Y:9,B:7,M:5,K:3} },
+    { al:'UX', fn:'44',  from:'ASU', to:'MAD', dep:'2330', arr:'1530', dur:'11:00', eq:'789', classes:{J:6,C:4,D:2,Y:9,B:9,M:8,K:5} },
+
+    // --- MAD - ASU ---
+    { al:'IB', fn:'6825',from:'MAD', to:'ASU', dep:'2300', arr:'0800', dur:'12:00', eq:'332', classes:{J:5,C:3,D:1,Y:9,B:8,M:6,K:4} },
+    { al:'UX', fn:'45',  from:'MAD', to:'ASU', dep:'0100', arr:'1000', dur:'12:00', eq:'789', classes:{J:7,C:5,D:3,Y:9,B:9,M:9,K:6} },
+
+    // --- ASU - BUE ---
+    { al:'AR', fn:'1141',from:'ASU', to:'EZE', dep:'0700', arr:'0900', dur:'2:00', eq:'738', classes:{J:4,C:2,D:0,Y:9,B:9,M:9,K:7} },
+    { al:'PZ', fn:'201', from:'ASU', to:'EZE', dep:'1000', arr:'1200', dur:'2:00', eq:'320', classes:{J:0,C:0,D:0,Y:9,B:9,M:8,K:5} },
+    { al:'AV', fn:'950', from:'ASU', to:'EZE', dep:'1400', arr:'1600', dur:'2:00', eq:'319', classes:{J:3,C:1,D:0,Y:9,B:9,M:7,K:4} },
+
+    // --- BUE - ASU ---
+    { al:'AR', fn:'1140',from:'EZE', to:'ASU', dep:'1000', arr:'1200', dur:'2:00', eq:'738', classes:{J:5,C:3,D:1,Y:9,B:9,M:9,K:6} },
+    { al:'PZ', fn:'202', from:'EZE', to:'ASU', dep:'1300', arr:'1500', dur:'2:00', eq:'320', classes:{J:0,C:0,D:0,Y:9,B:8,M:7,K:4} },
+
+    // --- ASU - VVI ---
+    { al:'OB', fn:'731', from:'ASU', to:'VVI', dep:'0800', arr:'0930', dur:'1:30', eq:'738', classes:{J:0,C:0,D:0,Y:9,B:9,M:8,K:6} },
+    { al:'PZ', fn:'301', from:'ASU', to:'VVI', dep:'1200', arr:'1330', dur:'1:30', eq:'320', classes:{J:0,C:0,D:0,Y:9,B:7,M:5,K:3} },
   ],
 
   // ---- Fare data by route ----
@@ -290,6 +325,20 @@ var DATA = {
       { al:'AA', basis:'MOW7AP',   ow:130,  cls:'M', pen:75,  dates:'01MAR-30JUN', ap:'7D',  min:'3D', max:'1M',  ref:'N' },
       { al:'AM', basis:'YOW',      ow:215,  cls:'Y', pen:25,  dates:'01MAR-30JUN', ap:'',    min:'',   max:'12M', ref:'R' },
       { al:'AM', basis:'MOW14AP',  ow:120,  cls:'M', pen:75,  dates:'01MAR-30JUN', ap:'14D', min:'7D', max:'1M',  ref:'N' },
+    ],
+    'ASU-MAD': [
+      { al:'IB', basis:'JOW',      ow:2800, cls:'J', pen:0,   dates:'01MAR-30NOV', ap:'',    min:'',   max:'12M', ref:'R' },
+      { al:'IB', basis:'YOW',      ow:850,  cls:'Y', pen:50,  dates:'01MAR-30NOV', ap:'',    min:'',   max:'12M', ref:'R' },
+      { al:'IB', basis:'MOW14AP',  ow:620,  cls:'M', pen:150, dates:'01MAR-30NOV', ap:'14D', min:'7D', max:'3M',  ref:'N' },
+      { al:'IB', basis:'KOW21AP',  ow:480,  cls:'K', pen:200, dates:'01MAR-30NOV', ap:'21D', min:'14D',max:'1M',  ref:'N' },
+      { al:'UX', basis:'YOW',      ow:820,  cls:'Y', pen:50,  dates:'01MAR-30NOV', ap:'',    min:'',   max:'12M', ref:'R' },
+      { al:'UX', basis:'KOW14AP',  ow:510,  cls:'K', pen:175, dates:'01MAR-30NOV', ap:'14D', min:'7D', max:'3M',  ref:'N' },
+    ],
+    'ASU-EZE': [
+      { al:'AR', basis:'YOW',      ow:320,  cls:'Y', pen:25,  dates:'01MAR-30NOV', ap:'',    min:'',   max:'12M', ref:'R' },
+      { al:'AR', basis:'MOW7AP',   ow:180,  cls:'M', pen:75,  dates:'01MAR-30NOV', ap:'7D',  min:'3D', max:'1M',  ref:'N' },
+      { al:'PZ', basis:'YOW',      ow:290,  cls:'Y', pen:30,  dates:'01MAR-30NOV', ap:'',    min:'',   max:'6M',  ref:'R' },
+      { al:'AV', basis:'YOW',      ow:310,  cls:'Y', pen:25,  dates:'01MAR-30NOV', ap:'',    min:'',   max:'12M', ref:'R' },
     ],
   },
 };

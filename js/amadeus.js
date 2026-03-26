@@ -61,6 +61,9 @@ var Amadeus = (function () {
       segments: [],
       phones: [],
       emails: [],
+      docs: [],      // SRDOCS passport data
+      ssrs: [],      // SR special service requests
+      seats: [],     // seat assignments
       ticketing: null,
       receivedFrom: null,
       remarks: [],
@@ -106,6 +109,13 @@ var Amadeus = (function () {
     if (cmd.startsWith('DAN'))                          return handleDAN(cmd.substring(3));
     if (cmd.match(/^DN[A-Z]/))                          return handleDN(cmd.substring(2));
     if (cmd.startsWith('HE'))                           return handleHE(cmd.substring(2).trim());
+    if (cmd === 'IR')                                   return handleIR();
+    if (cmd.startsWith('SRDOCS'))                       return handleSRDOCS(cmd);
+    if (cmd.startsWith('SRFOID'))                       return handleSRFOID(cmd);
+    if (cmd.match(/^SR[A-Z]{4}/))                       return handleSR(cmd);
+    if (cmd.match(/^TKTL/))                             return handleTKTL(cmd.substring(4));
+    if (cmd.match(/^SM\d?$/))                           return handleSM(cmd);
+    if (cmd.match(/^ST\//))                             return handleST(cmd);
 
     return 'INVALID';
   }
@@ -340,6 +350,198 @@ var Amadeus = (function () {
   }
 
   // ============================================================
+  //  TKTL – Ticketing Time Limit
+  // ============================================================
+
+  function handleTKTL(args) {
+    args = args.trim();
+    if (!args) return 'FORMAT: TKTL{DDMMM}  e.g. TKTL25MAR';
+    var dt = parseDate(args);
+    if (!dt) return 'INVALID DATE';
+    ensurePNR().ticketing = 'TL' + args;
+    return 'TK TL/' + args;
+  }
+
+  // ============================================================
+  //  SRDOCS – Passport/APIS data
+  // ============================================================
+
+  function handleSRDOCS(cmd) {
+    // SRDOCS YY HK1-P-ESP-12345678-ESP-28JUN88-F-24JUN30-GARCIA-ANA/P1
+    // or simplified: SRDOCS-P-ESP-12345678-ESP-28JUN88-F-24JUN30-GARCIA-ANA
+    if (!currentPNR) return 'NO PNR';
+    if (currentPNR.names.length === 0) return 'NEED NAME FIRST - NM1...';
+
+    // Accept both formal and simplified formats
+    var raw = cmd.replace(/^SRDOCS\s*/i, '').replace(/^YY\s*HK\d[-\s]*/i, '');
+    if (!raw || raw.length < 10) return 'FORMAT: SRDOCS YY HK1-P-{COUNTRY}-{PASSPORT}-{NATIONALITY}-{DOB}-{GENDER}-{EXPIRY}-{LASTNAME}-{FIRSTNAME}/P{N}';
+
+    var paxMatch = raw.match(/\/P(\d+)\s*$/);
+    var paxNum = paxMatch ? parseInt(paxMatch[1], 10) : 1;
+
+    if (paxNum < 1 || paxNum > currentPNR.names.length) return 'INVALID PASSENGER NUMBER';
+
+    var docData = raw.replace(/\/P\d+\s*$/, '');
+    ensurePNR().docs.push({
+      data: docData,
+      pax: paxNum,
+    });
+
+    return 'SSR DOCS YY HK1 ' + docData + '/P' + paxNum;
+  }
+
+  // ============================================================
+  //  SRFOID – Passenger ID
+  // ============================================================
+
+  function handleSRFOID(cmd) {
+    if (!currentPNR) return 'NO PNR';
+    var raw = cmd.replace(/^SRFOID[-\s]*/i, '');
+    if (!raw) return 'FORMAT: SRFOID-{IDTYPE}{NUMBER}{COUNTRY}/P{N}';
+
+    var paxMatch = raw.match(/\/P(\d+)\s*$/);
+    var paxNum = paxMatch ? parseInt(paxMatch[1], 10) : 1;
+
+    ensurePNR().docs.push({
+      data: 'FOID-' + raw.replace(/\/P\d+\s*$/, ''),
+      pax: paxNum,
+    });
+
+    return 'SSR FOID YY HK1 ' + raw;
+  }
+
+  // ============================================================
+  //  SR – Special Service Request
+  // ============================================================
+
+  function handleSR(cmd) {
+    if (!currentPNR) return 'NO PNR';
+
+    // SRVGML, SRWCHR, SRPETC, etc.
+    var type = cmd.substring(2, 6);
+    var rest = cmd.substring(6).trim();
+    var paxNum = 0; // 0 = all passengers
+
+    var paxMatch = rest.match(/\/P(\d+)/);
+    if (paxMatch) paxNum = parseInt(paxMatch[1], 10);
+
+    var validTypes = {
+      'VGML': 'VEGETARIAN MEAL',
+      'AVML': 'ASIAN VEGETARIAN MEAL',
+      'KSML': 'KOSHER MEAL',
+      'DBML': 'DIABETIC MEAL',
+      'BLML': 'BLAND MEAL',
+      'MOML': 'MUSLIM MEAL',
+      'CHML': 'CHILD MEAL',
+      'BBML': 'BABY MEAL',
+      'WCHR': 'WHEELCHAIR - R FOR RAMP',
+      'WCHC': 'WHEELCHAIR - C FOR CABIN SEAT',
+      'WCHS': 'WHEELCHAIR - S FOR STEPS',
+      'PETC': 'PET IN CABIN',
+      'BIKE': 'BICYCLE',
+      'UMNR': 'UNACCOMPANIED MINOR',
+      'MAAS': 'MEET AND ASSIST',
+    };
+
+    var desc = validTypes[type];
+    if (!desc) return 'UNKNOWN SSR TYPE: ' + type + '\nCommon types: VGML WCHR AVML KSML DBML PETC UMNR';
+
+    ensurePNR().ssrs.push({
+      type: type,
+      desc: desc,
+      pax: paxNum,
+    });
+
+    var paxStr = paxNum > 0 ? '/P' + paxNum : '';
+    return 'SSR ' + type + ' YY HK1 ' + desc + paxStr;
+  }
+
+  // ============================================================
+  //  SM – Seat Map
+  // ============================================================
+
+  function handleSM(cmd) {
+    if (!currentPNR) return 'NO PNR';
+    if (currentPNR.segments.length === 0) return 'NO ITINERARY';
+
+    var segNum = cmd.length > 2 ? parseInt(cmd.substring(2), 10) : 1;
+    if (segNum < 1 || segNum > currentPNR.segments.length) return 'INVALID SEGMENT';
+
+    var seg = currentPNR.segments[segNum - 1];
+    // Generate a simple mock seat map
+    var lines = [
+      'SEAT MAP  ' + seg.al + ' ' + seg.fn + '  ' + seg.from + seg.to + '  ' + seg.eq,
+      '',
+      '     A   B   C       D   E   F',
+    ];
+
+    for (var row = 1; row <= 30; row++) {
+      var seats = [];
+      var cols = ['A','B','C','','D','E','F'];
+      for (var c = 0; c < cols.length; c++) {
+        if (cols[c] === '') { seats.push('   '); continue; }
+        // Random availability based on row
+        if (row <= 4) {
+          // Business class rows
+          seats.push(Math.random() > 0.3 ? ' . ' : ' X ');
+        } else {
+          seats.push(Math.random() > 0.2 ? ' . ' : ' X ');
+        }
+      }
+      var rowStr = rpad(row, 3);
+      lines.push('  ' + rowStr + seats.join(''));
+      if (row === 4) lines.push('  ---  -   -   -       -   -   -');
+    }
+
+    lines.push('');
+    lines.push('. = AVAILABLE   X = OCCUPIED');
+    lines.push('');
+    lines.push('To assign: ST/{SEAT}/P{PAX}  e.g. ST/12A/P1');
+
+    return lines.join('\n');
+  }
+
+  // ============================================================
+  //  ST – Seat Assignment
+  // ============================================================
+
+  function handleST(cmd) {
+    if (!currentPNR) return 'NO PNR';
+    if (currentPNR.segments.length === 0) return 'NO ITINERARY';
+
+    // ST/12A/P1 or ST/12A/P1/S1
+    var m = cmd.match(/^ST\/(\d{1,2}[A-F])(?:\/P(\d+))?(?:\/S(\d+))?$/);
+    if (!m) return 'FORMAT: ST/{SEAT}/P{PAX}  e.g. ST/12A/P1';
+
+    var seat = m[1];
+    var paxNum = m[2] ? parseInt(m[2], 10) : 1;
+    var segNum = m[3] ? parseInt(m[3], 10) : 0; // 0 = all segments
+
+    if (paxNum > currentPNR.names.length) return 'INVALID PASSENGER NUMBER';
+
+    ensurePNR().seats.push({
+      seat: seat,
+      pax: paxNum,
+      seg: segNum,
+    });
+
+    return 'SEAT ' + seat + ' ASSIGNED TO PASSENGER ' + paxNum;
+  }
+
+  // ============================================================
+  //  IR – Ignore and Retrieve (keep PNR active)
+  // ============================================================
+
+  function handleIR() {
+    if (!currentPNR) return 'NO PNR TO IGNORE';
+    if (currentPNR.locator && storedPNRs[currentPNR.locator]) {
+      currentPNR = JSON.parse(JSON.stringify(storedPNRs[currentPNR.locator]));
+      return 'IG - RESTORED SAVED VERSION\n' + formatPNR(currentPNR);
+    }
+    return 'IG - NO SAVED VERSION TO RESTORE';
+  }
+
+  // ============================================================
   //  RF – Received From
   // ============================================================
 
@@ -455,6 +657,9 @@ var Amadeus = (function () {
       if (el.type === 'segment') currentPNR.segments.splice(el.idx, 1);
       if (el.type === 'phone')   currentPNR.phones.splice(el.idx, 1);
       if (el.type === 'email')   currentPNR.emails.splice(el.idx, 1);
+      if (el.type === 'doc')     currentPNR.docs.splice(el.idx, 1);
+      if (el.type === 'ssr')     currentPNR.ssrs.splice(el.idx, 1);
+      if (el.type === 'seat')    currentPNR.seats.splice(el.idx, 1);
       if (el.type === 'tk')      currentPNR.ticketing = null;
       if (el.type === 'rf')      currentPNR.receivedFrom = null;
     }
@@ -773,6 +978,83 @@ var Amadeus = (function () {
         '',
         'Records who created/modified the PNR. Required before saving.',
       ].join('\n'),
+
+      'SRDOCS': [
+        'SRDOCS - PASSPORT / APIS DATA',
+        '==============================',
+        '',
+        'Format:  SRDOCS YY HK1-P-{COUNTRY}-{PASSPORT}-{NATIONALITY}-{DOB}-{GENDER}-{EXPIRY}-{LASTNAME}-{FIRSTNAME}/P{N}',
+        '',
+        'Examples:',
+        '  SRDOCS YY HK1-P-ESP-AB123456-ESP-15MAR85-M-20JAN30-GARCIA-PEDRO/P1',
+        '  SRDOCS YY HK1-P-PRY-1234567-PRY-28JUN88-F-24JUN30-LOPEZ-ANA/P2',
+        '',
+        'Fields:  P=Passport, Country, Doc Number, Nationality,',
+        '         DOB (DDMMMYY), Gender (M/F), Expiry (DDMMMYY),',
+        '         Lastname, Firstname, /P = passenger number',
+        '',
+        'Required for all international travel (APIS data).',
+      ].join('\n'),
+
+      'SR': [
+        'SR - SPECIAL SERVICE REQUEST',
+        '============================',
+        '',
+        'Format:  SR{TYPE}  or  SR{TYPE}/P{N}',
+        '',
+        'Meal requests:',
+        '  SRVGML   Vegetarian        SRAVML   Asian vegetarian',
+        '  SRKSML   Kosher            SRDBML   Diabetic',
+        '  SRCHML   Child meal        SRBBML   Baby meal',
+        '',
+        'Assistance:',
+        '  SRWCHR   Wheelchair (ramp) SRWCHC   Wheelchair (cabin)',
+        '  SRMAAS   Meet and assist   SRUMNR   Unaccompanied minor',
+        '',
+        'Other:',
+        '  SRPETC   Pet in cabin      SRBIKE   Bicycle',
+      ].join('\n'),
+
+      'TKTL': [
+        'TKTL - TICKETING TIME LIMIT',
+        '===========================',
+        '',
+        'Format:  TKTL{DDMMM}',
+        'Example: TKTL25MAR',
+        '',
+        'Sets a deadline for ticket issuance.',
+        'Alternative to TKOK (immediate ticketing).',
+      ].join('\n'),
+
+      'SM': [
+        'SM - SEAT MAP',
+        '==============',
+        '',
+        'SM     Show seat map for segment 1',
+        'SM2    Show seat map for segment 2',
+        '',
+        '. = Available   X = Occupied',
+        'Use ST to assign seats after viewing the map.',
+      ].join('\n'),
+
+      'ST': [
+        'ST - SEAT ASSIGNMENT',
+        '====================',
+        '',
+        'Format:  ST/{SEAT}/P{PAX}',
+        'Example: ST/12A/P1',
+        '',
+        'Assigns seat 12A to passenger 1.',
+        'View SM first to see available seats.',
+      ].join('\n'),
+
+      'IR': [
+        'IR - IGNORE AND RESTORE',
+        '========================',
+        '',
+        'Discards unsaved changes and restores the last saved version.',
+        'Unlike IG, keeps the PNR active for further editing.',
+      ].join('\n'),
     };
 
     // Handle aliases
@@ -800,6 +1082,10 @@ var Amadeus = (function () {
       '  AP   Add phone contact       APE  Add email contact',
       '  TKOK Ticketing arrangement   RF   Received from',
       '',
+      'PASSENGER DATA',
+      '  SRDOCS  Passport/APIS data    SR     Special service request',
+      '  SRFOID  Passenger ID          TKTL   Ticketing time limit',
+      '',
       'PNR MANAGEMENT',
       '  ET   End transaction         ER   End & retrieve',
       '  RT   Retrieve PNR            IG   Ignore/cancel',
@@ -807,6 +1093,9 @@ var Amadeus = (function () {
       '',
       'MODIFICATIONS',
       '  XI   Cancel all segments     XE   Cancel element',
+      '',
+      'SEATS',
+      '  SM   Seat map display        ST     Assign seat',
       '',
       'DISPLAY',
       '  *R   Redisplay PNR           *I   Itinerary only',
@@ -892,6 +1181,25 @@ var Amadeus = (function () {
       lines.push('  ' + elNum + ' APE-' + e);
     });
 
+    // DOCS
+    pnr.docs.forEach(function (d) {
+      elNum++;
+      lines.push('  ' + elNum + ' SSR DOCS YY HK1 ' + d.data + '/P' + d.pax);
+    });
+
+    // SSRs
+    pnr.ssrs.forEach(function (s) {
+      elNum++;
+      var paxStr = s.pax > 0 ? '/P' + s.pax : '';
+      lines.push('  ' + elNum + ' SSR ' + s.type + ' YY HK1 ' + s.desc + paxStr);
+    });
+
+    // Seats
+    pnr.seats.forEach(function (s) {
+      elNum++;
+      lines.push('  ' + elNum + ' SEAT ' + s.seat + ' P' + s.pax);
+    });
+
     // Ticketing
     if (pnr.ticketing) {
       elNum++;
@@ -924,6 +1232,9 @@ var Amadeus = (function () {
     pnr.segments.forEach(function (_, i) { list.push({ type: 'segment', idx: i }); });
     pnr.phones.forEach(function (_, i)   { list.push({ type: 'phone', idx: i }); });
     pnr.emails.forEach(function (_, i)   { list.push({ type: 'email', idx: i }); });
+    pnr.docs.forEach(function (_, i)   { list.push({ type: 'doc', idx: i }); });
+    pnr.ssrs.forEach(function (_, i)   { list.push({ type: 'ssr', idx: i }); });
+    pnr.seats.forEach(function (_, i)  { list.push({ type: 'seat', idx: i }); });
     if (pnr.ticketing)    list.push({ type: 'tk', idx: 0 });
     if (pnr.receivedFrom) list.push({ type: 'rf', idx: 0 });
     return list;
