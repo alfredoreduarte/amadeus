@@ -208,7 +208,147 @@ var Training = (function () {
         ACT + 'Escriba TRAINING 3 para el siguiente ejercicio.',
     },
 
-    // ─── EJERCICIO 3 ─────────────────────────────────────────────
+    // ─── EJERCICIO 3 (NEW) ──────────────────────────────────────
+    {
+      title: 'RESERVA IDA Y VUELTA CON DOCUMENTOS',
+      scenario: [
+        'Un pasajero llama a la agencia:',
+        '"Soy Ana Lopez, necesito volar de Miami a Madrid',
+        'el 15 de junio y regresar el 30 de junio.',
+        'Mi pasaporte paraguayo es R694535,',
+        'fecha de nacimiento 28 de junio de 1988.',
+        'Mi telefono es 305 555 7890."',
+      ].join(' '),
+      steps: [
+        {
+          instruction:
+            'Una reserva IDA Y VUELTA requiere dos\n' +
+            'busquedas: una para la ida y otra para\n' +
+            'la vuelta. Empecemos con la ida.\n\n' +
+            ACT + 'Busque vuelos de MIA a Madrid (MAD) el 15 de junio.',
+          hint: 'AN15JUNMIAMAD',
+          validate: /^AN\d{2}[A-Z]{3}MIAMAD/,
+          success: 'Vuelos de ida encontrados!',
+        },
+        {
+          instruction:
+            'Seleccione un vuelo para la ida.\n' +
+            'Recuerde: SS + cantidad + clase + linea\n\n' +
+            ACT + 'Venda 1 asiento en economica para la ida.',
+          hint: 'SS1Y1',
+          validate: /^SS\d[A-Z]\d/,
+          success:
+            'Segmento de IDA vendido!\n' +
+            'Ahora busque vuelos para el REGRESO.',
+        },
+        {
+          instruction:
+            'Ahora busque vuelos para el regreso.\n' +
+            'Misma ruta pero invertida: MAD a MIA.\n\n' +
+            ACT + 'Busque vuelos de Madrid (MAD) a MIA el 30 de junio.',
+          hint: 'AN30JUNMADMIA',
+          validate: /^AN\d{2}[A-Z]{3}MADMIA/,
+          success: 'Vuelos de regreso encontrados!',
+        },
+        {
+          instruction:
+            ACT + 'Venda 1 asiento en economica para el regreso.',
+          hint: 'SS1Y1',
+          validate: /^SS\d[A-Z]\d/,
+          success:
+            'Segmento de VUELTA vendido!\n' +
+            'El PNR ahora tiene 2 segmentos:\n' +
+            '  1. MIA-MAD (ida)\n' +
+            '  2. MAD-MIA (vuelta)\n' +
+            'Ahora agregue la pasajera.',
+        },
+        {
+          instruction:
+            ACT + 'Agregue a Ana Lopez (NM1LOPEZ/ANA MRS).',
+          hint: 'NM1LOPEZ/ANA MRS',
+          validate: /^NM\d.*LOPEZ\/ANA/,
+          success: 'Nombre registrado!',
+        },
+        {
+          instruction:
+            'Para vuelos INTERNACIONALES es obligatorio\n' +
+            'cargar los datos del pasaporte (APIS).\n' +
+            'El comando es SRDOCS. Se escribe asi:\n\n' +
+            '  SRDOCS YY HK1-P-{PAIS}-{PASAPORTE}-\n' +
+            '  {NACIONALIDAD}-{NACIMIENTO}-{SEXO}-\n' +
+            '  {VENCIMIENTO}-{APELLIDO}-{NOMBRE}/P{N}\n\n' +
+            '  P = Pasaporte\n' +
+            '  PAIS/NACIONALIDAD = codigo de 3 letras\n' +
+            '  NACIMIENTO = formato DDMMMYY (ej: 28JUN88)\n' +
+            '  SEXO = M o F\n' +
+            '  /P1 = pasajero numero 1\n\n' +
+            ACT + 'Cargue el pasaporte de Ana Lopez (PRY, R694535, 28JUN88, F).',
+          hint:
+            'SRDOCS YY HK1-P-PRY-R694535-PRY-28JUN88-F-24JUN30-LOPEZ-ANA/P1\n\n' +
+            '  PRY = Paraguay\n' +
+            '  R694535 = numero de pasaporte\n' +
+            '  28JUN88 = fecha de nacimiento\n' +
+            '  F = femenino\n' +
+            '  24JUN30 = vencimiento del pasaporte',
+          validate: /^SRDOCS/,
+          success:
+            'Documento cargado!\n' +
+            'Sin SRDOCS, la aerolinea puede rechazar\n' +
+            'el embarque en vuelos internacionales.',
+        },
+        {
+          instruction:
+            'Recuerde: AP + ciudad + numero\n\n' +
+            ACT + 'Agregue el telefono de la pasajera en Miami.',
+          hint: 'APMIA 305 555 7890',
+          validate: /^AP[A-Z]{3}\s/,
+          success: 'Contacto agregado!',
+        },
+        {
+          instruction:
+            'Para este viaje el boleto debe emitirse\n' +
+            'antes del 25 de mayo. En vez de TKOK\n' +
+            '(emision inmediata), usamos TKTL:\n\n' +
+            '  TKTL + fecha limite\n' +
+            '  TKTL   25MAY\n\n' +
+            ACT + 'Establezca la fecha limite de emision (TKTL25MAY).',
+          hint:
+            'TKTL25MAY\n\n' +
+            '  TKTL = Ticketing Time Limit\n' +
+            '  25MAY = fecha limite para emitir',
+          validate: /^TKTL/,
+          success:
+            'Ticketing con fecha limite!\n' +
+            '  TKOK = emision inmediata\n' +
+            '  TKTL = fecha limite para emitir',
+        },
+        {
+          instruction: ACT + 'Registre quien hizo la reserva (RF + nombre).',
+          hint: 'RFAGENTE',
+          validate: /^RF\S/,
+          success: 'Registrado!',
+        },
+        {
+          instruction: ACT + 'Guarde la reserva y vea el PNR (escriba ER).',
+          hint: 'ER',
+          validate: /^ER$/,
+          success:
+            'Reserva ida y vuelta guardada!\n' +
+            'Observe los 2 segmentos y los datos\n' +
+            'del pasaporte en el PNR.',
+        },
+      ],
+      completion:
+        'Ejercicio 3 completado!\n\n' +
+        'Puntos clave:\n' +
+        '  - IDA Y VUELTA = dos busquedas (AN) + dos ventas (SS)\n' +
+        '  - SRDOCS es OBLIGATORIO para vuelos internacionales\n' +
+        '  - TKTL establece fecha limite de emision de boleto\n' +
+        '  - TKOK = emision inmediata, TKTL = con fecha limite\n\n' +
+        ACT + 'Escriba TRAINING 4 para continuar.',
+    },
+
+    // ─── EJERCICIO 4 (was 3) ──────────────────────────────────────
     {
       title: 'RESERVA PARA MULTIPLES PASAJEROS',
       scenario: [
@@ -300,17 +440,17 @@ var Training = (function () {
         },
       ],
       completion:
-        'Ejercicio 3 completado!\n\n' +
+        'Ejercicio 4 completado!\n\n' +
         'Puntos clave:\n' +
         '  - SS3 vende 3 asientos de una vez\n' +
         '  - Se puede agregar adulto + nino en una sola linea con +\n' +
         '  - (CHD) = nino de 2 a 11 anos (obligatorio)\n' +
         '  - (INF) = bebe menor de 2 anos\n' +
         '  - Titulos: MR, MRS, MS, MSTR (menor), MISS\n\n' +
-        ACT + 'Escriba TRAINING 4 para continuar.',
+        ACT + 'Escriba TRAINING 5 para continuar.',
     },
 
-    // ─── EJERCICIO 4 ─────────────────────────────────────────────
+    // ─── EJERCICIO 5 (was 4) ──────────────────────────────────────
     {
       title: 'RESERVA EN CLASE EJECUTIVA CON COTIZACION',
       scenario: [
@@ -411,16 +551,149 @@ var Training = (function () {
         },
       ],
       completion:
-        'Ejercicio 4 completado!\n\n' +
+        'Ejercicio 5 completado!\n\n' +
         'Puntos clave:\n' +
         '  - Clase J/C/D = Ejecutiva (Business)\n' +
         '  - APE registra correo electronico\n' +
         '  - FXP cotiza el precio total del PNR\n' +
         '  - Un PNR puede tener multiples contactos (telefono + email)\n\n' +
-        ACT + 'Escriba TRAINING 5 para continuar.',
+        ACT + 'Escriba TRAINING 6 para continuar.',
     },
 
-    // ─── EJERCICIO 5 ─────────────────────────────────────────────
+    // ─── EJERCICIO 6 (NEW) ──────────────────────────────────────
+    {
+      title: 'SERVICIOS ESPECIALES Y ASIENTOS',
+      scenario: [
+        'Una pasajera llama a la agencia:',
+        '"Tengo una reserva de Miami a Madrid.',
+        'Soy vegetariana y necesito comida especial.',
+        'Tambien me gustaria elegir un asiento',
+        'de ventanilla si es posible."',
+      ].join(' '),
+      steps: [
+        {
+          instruction:
+            'Primero necesitamos crear una reserva\n' +
+            'para poder agregar servicios. Busque\n' +
+            'vuelos de MIA a MAD para el 20 de junio.\n\n' +
+            ACT + 'Busque vuelos de MIA a Madrid (MAD) el 20 de junio.',
+          hint: 'AN20JUNMIAMAD',
+          validate: /^AN\d{2}[A-Z]{3}MIAMAD/,
+          success: 'Vuelos encontrados!',
+        },
+        {
+          instruction: ACT + 'Venda 1 asiento en economica.',
+          hint: 'SS1Y1',
+          validate: /^SS\d[A-Z]\d/,
+          success: 'Segmento vendido!',
+        },
+        {
+          instruction: ACT + 'Agregue a la pasajera: NM1MARTINEZ/LUCIA MRS',
+          hint: 'NM1MARTINEZ/LUCIA MRS',
+          validate: /^NM\d/,
+          success: 'Nombre registrado!',
+        },
+        {
+          instruction:
+            'Para solicitar COMIDA ESPECIAL usamos SR\n' +
+            'seguido del codigo de comida:\n\n' +
+            '  SRVGML = Vegetariana\n' +
+            '  SRAVML = Vegetariana asiatica\n' +
+            '  SRKSML = Kosher\n' +
+            '  SRDBML = Diabetica\n' +
+            '  SRCHML = Menu infantil\n\n' +
+            'La aerolinea confirma o rechaza el pedido.\n\n' +
+            ACT + 'Solicite comida vegetariana (SRVGML).',
+          hint:
+            'SRVGML\n\n' +
+            '  SR = Service Request\n' +
+            '  VGML = Vegetarian Meal',
+          validate: /^SRVGML/,
+          success:
+            'Comida vegetariana solicitada!\n' +
+            'El sistema muestra SSR VGML YY HK1.\n' +
+            'HK1 = confirmado para 1 pasajero.',
+        },
+        {
+          instruction:
+            'Otro servicio muy comun es la SILLA\n' +
+            'DE RUEDAS. Los codigos son:\n\n' +
+            '  SRWCHR = hasta la puerta del avion\n' +
+            '  SRWCHC = hasta el asiento\n' +
+            '  SRWCHS = puede subir escaleras\n\n' +
+            'No lo necesitamos ahora, pero aprendalo.\n' +
+            'Veamos ahora la seleccion de asientos.\n\n' +
+            'Para ver el MAPA DE ASIENTOS usamos SM.\n\n' +
+            ACT + 'Vea el mapa de asientos (escriba SM).',
+          hint:
+            'SM\n\n' +
+            '  SM = Seat Map\n' +
+            '  SM2 = mapa del segmento 2',
+          validate: /^SM/,
+          success:
+            'Mapa de asientos!\n' +
+            '  . = asiento disponible\n' +
+            '  X = asiento ocupado\n' +
+            '  A y F = ventanilla\n' +
+            '  C y D = pasillo',
+        },
+        {
+          instruction:
+            'Para ASIGNAR un asiento usamos ST:\n\n' +
+            '  ST / asiento / P + pasajero\n' +
+            '  ST /  12A    / P    1\n\n' +
+            '  12 = fila, A = columna (ventanilla)\n' +
+            '  P1 = pasajero 1\n\n' +
+            ACT + 'Asigne el asiento 12A a la pasajera (ventanilla).',
+          hint:
+            'ST/12A/P1\n\n' +
+            '  12A = fila 12, columna A\n' +
+            '  /P1 = pasajero 1',
+          validate: /^ST\//,
+          success: 'Asiento 12A asignado!',
+        },
+        {
+          instruction:
+            'Complete la reserva con los datos\n' +
+            'restantes. Agregue un telefono.\n\n' +
+            ACT + 'Agregue el telefono (APMIA + numero).',
+          hint: 'APMIA 305 555 3456',
+          validate: /^AP[A-Z]/,
+          success: 'Contacto agregado!',
+        },
+        {
+          instruction: ACT + 'Escriba TKOK para el ticketing.',
+          hint: 'TKOK',
+          validate: /^TKOK$/,
+          success: 'Listo!',
+        },
+        {
+          instruction: ACT + 'Registre quien hizo la reserva (RF + nombre).',
+          hint: 'RFAGENTE',
+          validate: /^RF\S/,
+          success: 'Registrado!',
+        },
+        {
+          instruction: ACT + 'Guarde la reserva con ER.',
+          hint: 'ER',
+          validate: /^ER$/,
+          success:
+            'Reserva guardada con servicios especiales\n' +
+            'y asiento asignado!',
+        },
+      ],
+      completion:
+        'Ejercicio 6 completado!\n\n' +
+        'Puntos clave:\n' +
+        '  - SRVGML solicita comida vegetariana\n' +
+        '  - SRWCHR solicita silla de ruedas\n' +
+        '  - SM muestra el mapa de asientos\n' +
+        '  - ST/12A/P1 asigna asiento al pasajero\n' +
+        '  - La aerolinea confirma o rechaza los SSR\n\n' +
+        ACT + 'Escriba TRAINING 7 para continuar.',
+    },
+
+    // ─── EJERCICIO 7 (was 5) ──────────────────────────────────────
     {
       title: 'CONSULTA Y COMPARACION DE TARIFAS',
       scenario: [
@@ -487,23 +760,152 @@ var Training = (function () {
         },
       ],
       completion:
-        'Ejercicio 5 completado!\n\n' +
+        'Ejercicio 7 completado!\n\n' +
         'Puntos clave:\n' +
         '  - FQD muestra tarifas por ruta y fecha\n' +
         '  - /A{XX} filtra busquedas por aerolinea\n' +
         '  - DAN decodifica codigos de aerolineas\n' +
         '  - Compare tarifas para ofrecer opciones al cliente\n\n' +
+        ACT + 'Escriba TRAINING 8 para el ultimo ejercicio.',
+    },
+
+    // ─── EJERCICIO 8 (NEW) ──────────────────────────────────────
+    {
+      title: 'MODIFICACIONES Y RECUPERACION',
+      scenario: [
+        'Un cliente llama preocupado:',
+        '"Tengo una reserva de Miami a Madrid pero',
+        'necesito cambiar la fecha de ida del 15 de',
+        'junio al 20 de junio. Es posible?"',
+      ].join(' '),
+      steps: [
+        {
+          instruction:
+            'Primero creemos una reserva para practicar.\n' +
+            'Busque vuelos MIA a MAD para el 15 de junio.\n\n' +
+            ACT + 'Busque vuelos de MIA a MAD el 15 de junio.',
+          hint: 'AN15JUNMIAMAD',
+          validate: /^AN\d{2}[A-Z]{3}MIAMAD/,
+          success: 'Vuelos encontrados!',
+        },
+        {
+          instruction: ACT + 'Venda 1 asiento en economica.',
+          hint: 'SS1Y1',
+          validate: /^SS\d[A-Z]\d/,
+          success: 'Segmento vendido!',
+        },
+        {
+          instruction: ACT + 'Agregue al pasajero: NM1REYES/CARLOS MR',
+          hint: 'NM1REYES/CARLOS MR',
+          validate: /^NM\d/,
+          success: 'Registrado!',
+        },
+        {
+          instruction:
+            'Complete los datos obligatorios rapidamente.\n\n' +
+            ACT + 'Agregue telefono, TKOK, RF y guarde con ER.',
+          hint:
+            'APMIA 305 555 0000\n' +
+            'luego TKOK\n' +
+            'luego RFAGENTE\n' +
+            'luego ER',
+          validate: /^AP[A-Z]/,
+          success: 'Telefono agregado! Siga con TKOK.',
+        },
+        {
+          instruction: ACT + 'Escriba TKOK.',
+          hint: 'TKOK',
+          validate: /^TKOK$/,
+          success: 'Ahora RF.',
+        },
+        {
+          instruction: ACT + 'Registre received from (RF + nombre).',
+          hint: 'RFAGENTE',
+          validate: /^RF\S/,
+          success: 'Ahora guarde con ER.',
+        },
+        {
+          instruction: ACT + 'Guarde la reserva con ER.',
+          hint: 'ER',
+          validate: /^ER$/,
+          success:
+            'Reserva guardada! Ahora practiquemos\n' +
+            'la MODIFICACION del itinerario.',
+        },
+        {
+          instruction:
+            'El cliente quiere cambiar la fecha.\n' +
+            'Para ELIMINAR un segmento usamos XE:\n\n' +
+            '  XE + numero de elemento\n\n' +
+            'El segmento de vuelo es el elemento que\n' +
+            'aparece despues de los nombres en el PNR.\n' +
+            'Mire el PNR: si tiene 1 nombre (elemento 1),\n' +
+            'el vuelo es el elemento 2.\n\n' +
+            ACT + 'Cancele el segmento de vuelo (XE2).',
+          hint:
+            'XE2\n\n' +
+            '  XE = Cancel Element\n' +
+            '  2 = numero del segmento de vuelo',
+          validate: /^XE\d/,
+          success:
+            'Segmento cancelado!\n' +
+            'Ahora busque la nueva fecha.',
+        },
+        {
+          instruction:
+            ACT + 'Busque vuelos de MIA a MAD para el 20 de junio.',
+          hint: 'AN20JUNMIAMAD',
+          validate: /^AN\d{2}[A-Z]{3}MIAMAD/,
+          success: 'Nuevos vuelos encontrados!',
+        },
+        {
+          instruction:
+            ACT + 'Venda 1 asiento en el nuevo vuelo.',
+          hint: 'SS1Y1',
+          validate: /^SS\d[A-Z]\d/,
+          success:
+            'Nuevo segmento vendido!\n' +
+            'El PNR ahora tiene la nueva fecha.',
+        },
+        {
+          instruction:
+            'Despues de modificar siempre hay que\n' +
+            'guardar los cambios con RF + ER.\n\n' +
+            ACT + 'Registre la modificacion (RF + nombre).',
+          hint: 'RFAGENTE',
+          validate: /^RF\S/,
+          success: 'Registrado!',
+        },
+        {
+          instruction: ACT + 'Guarde los cambios con ER.',
+          hint: 'ER',
+          validate: /^ER$/,
+          success:
+            'Modificacion guardada!\n' +
+            'El PNR ahora muestra el vuelo del 20 de junio.',
+        },
+      ],
+      completion:
+        'Ejercicio 8 completado!\n\n' +
+        'Puntos clave:\n' +
+        '  - XE{N} cancela un elemento por su numero\n' +
+        '  - Para cambiar fecha: XE (cancelar) + AN (buscar) + SS (vender)\n' +
+        '  - Siempre RF + ER despues de modificar\n' +
+        '  - Use *I para ver solo el itinerario\n' +
+        '  - Use RT para ver el PNR completo\n\n' +
         SEP + '\n\n' +
         'FELICITACIONES! Ha completado todos los ejercicios!\n\n' +
         'Resumen de comandos aprendidos:\n' +
-        '  AN    Buscar vuelos         FQD   Consultar tarifas\n' +
-        '  SS    Vender asientos       NM    Agregar nombre\n' +
-        '  AP    Agregar telefono      APE   Agregar email\n' +
-        '  TKOK  Ticketing             RF    Received from\n' +
-        '  ET/ER Guardar reserva       RT    Recuperar PNR\n' +
-        '  FXP   Cotizar precio        XE    Cancelar elemento\n' +
-        '  DN    Decodificar ciudad    DAN   Decodificar aerolinea\n' +
-        '  HE    Ayuda del sistema\n\n' +
+        '  AN     Buscar vuelos         FQD    Consultar tarifas\n' +
+        '  SS     Vender asientos       NM     Agregar nombre\n' +
+        '  AP     Agregar telefono      APE    Agregar email\n' +
+        '  TKOK   Ticketing inmediato   TKTL   Ticketing con limite\n' +
+        '  RF     Received from         ET/ER  Guardar reserva\n' +
+        '  RT     Recuperar PNR         FXP    Cotizar precio\n' +
+        '  SRDOCS Datos de pasaporte    SR     Servicios especiales\n' +
+        '  SM     Mapa de asientos      ST     Asignar asiento\n' +
+        '  XE     Cancelar elemento     DN     Decodificar ciudad\n' +
+        '  DAN    Decodificar aerolinea HE     Ayuda del sistema\n\n' +
         'Puede repetir cualquier ejercicio con TRAINING {N}\n' +
         'o practicar libremente con los comandos aprendidos.',
     },
@@ -533,9 +935,12 @@ var Training = (function () {
   var SHORT_TITLES = [
     'Busqueda de vuelos',
     'Crear una reserva',
+    'Ida y vuelta con documentos',
     'Multiples pasajeros',
     'Clase ejecutiva y precio',
+    'Servicios especiales y asientos',
     'Tarifas y codigos',
+    'Modificaciones y recuperacion',
   ];
 
   function showMenu() {

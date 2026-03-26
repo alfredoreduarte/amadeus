@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Amadeus GDS training course website — a commercial product that teaches travel agents the Amadeus reservation system through interactive exercises in a browser-based terminal simulator. Features a landing page with a hero "AHA moment" input, 5 guided exercises (2 free, 3 behind a $3 Stripe paywall), and a full Amadeus command simulator.
+Amadeus GDS training course website — a commercial product that teaches travel agents the Amadeus reservation system through interactive exercises in a browser-based terminal simulator. Features a landing page with a hero "AHA moment" input, 8 guided exercises (2 free, 6 behind a $3 Stripe paywall), and a full Amadeus command simulator. Targets the Latin American travel agent market (Spanish language, Paraguay/Bolivia/Argentina routes).
 
 ## Running
 
@@ -15,8 +15,8 @@ No build step. Open `index.html` directly in a browser. All JavaScript is vanill
 Four JS files loaded in order via `<script>` tags (order matters — each depends on the previous):
 
 1. **`js/data.js`** — `DATA` global with mock airlines, airports, cities, flight schedules, and fare tables. All static, no backend.
-2. **`js/amadeus.js`** — `Amadeus` IIFE exposing `process(input)` and `welcome()`. Command parser/router dispatching to handlers (AN, SS, NM, AP, FQD, FXP, ET/ER, RT, XE, DN, DAN, HE, etc.). Maintains session state: current PNR, stored PNRs (by 6-letter locator), last availability results, scroll position.
-3. **`js/training.js`** — `Training` IIFE with 5 guided exercises in Spanish. Exercises 1-2 free, 3-5 locked behind paywall. Returns `'__PAYWALL__'` sentinel string when locked exercise is attempted or `COMPRAR` is typed; terminal.js catches this to show the paywall modal. Step validation uses regex. Uses `localStorage('ama_paid')` for unlock state.
+2. **`js/amadeus.js`** — `Amadeus` IIFE exposing `process(input)` and `welcome()`. Command parser/router dispatching to handlers (AN, SS, NM, AP, FQD, FXP, ET/ER, RT, XE, DN, DAN, HE, SRDOCS, SR, TKTL, SM, ST, IR, etc.). Maintains session state: current PNR (with docs, ssrs, seats), stored PNRs (by 6-letter locator), last availability results, scroll position.
+3. **`js/training.js`** — `Training` IIFE with 8 guided exercises in Spanish. Exercises 1-2 free, 3-8 locked behind paywall. Returns `'__PAYWALL__'` sentinel string when locked exercise is attempted or `COMPRAR` is typed; terminal.js catches this to show the paywall modal. Step validation uses regex. Uses `localStorage('ama_paid')` for unlock state.
 4. **`js/terminal.js`** — DOM wiring. Handles: hero landing input → terminal transition (fade), command history (arrow keys), output rendering with CSS classes, help panel, paywall modal show/hide, and Stripe unlock redirect (`?unlocked=true` → sets localStorage).
 
 ## User Flow
