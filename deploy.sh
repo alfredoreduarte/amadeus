@@ -19,6 +19,9 @@ rsync -avz --delete \
   --exclude='plans' \
   --exclude='deploy.sh' \
   --exclude='index.html.bak' \
+  --exclude='api/.env' \
+  --exclude='api/node_modules' \
+  --exclude='api/data' \
   ./ "$SERVER:$REMOTE_DIR/"
 
 # Restore original index.html

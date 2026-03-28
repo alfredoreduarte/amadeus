@@ -3,3 +3,7 @@
 *.swo
 node_modules/
 reference/
+.worktrees
+api/.env
+api/data/
+plans/
