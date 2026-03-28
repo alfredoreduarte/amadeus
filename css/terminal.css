@@ -789,8 +789,7 @@ body {
   .hero-dot { display: none; }
 
   /* Terminal on mobile */
-  body { font-size: 13px; }
-  #terminal { padding: 8px 10px; }
+  #terminal { font-size: 13px; padding: 8px 10px; }
 
   /* Training text: tighten padding */
   #output .training,
@@ -821,14 +820,15 @@ body {
   .hero-title,
   .hero-subtitle,
   .hero-features {
-    transition: max-height 0.3s ease, margin 0.3s ease, opacity 0.2s ease;
+    max-height: 200px;
+    transition: max-height 0.25s ease, margin 0.25s ease, opacity 0.15s ease;
     overflow: hidden;
   }
 
-  #hero:has(#hero-input:focus) .hero-badge,
-  #hero:has(#hero-input:focus) .hero-title,
-  #hero:has(#hero-input:focus) .hero-subtitle,
-  #hero:has(#hero-input:focus) .hero-features {
+  #hero:focus-within .hero-badge,
+  #hero:focus-within .hero-title,
+  #hero:focus-within .hero-subtitle,
+  #hero:focus-within .hero-features {
     max-height: 0;
     margin: 0;
     padding: 0;
@@ -836,15 +836,15 @@ body {
     border: none;
   }
 
-  #hero:has(#hero-input:focus) .decoder {
+  #hero:focus-within .decoder {
     margin-bottom: 10px;
   }
 
-  #hero:has(#hero-input:focus) .hero-arrow {
+  #hero:focus-within .hero-arrow {
     margin-bottom: 6px;
   }
 
-  #hero:has(#hero-input:focus) .hero-hint {
+  #hero:focus-within .hero-hint {
     margin-top: 6px;
   }
 }
