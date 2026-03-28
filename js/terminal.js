@@ -357,6 +357,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var lines = text.split('\n');
     if (lines.length <= TRAINING_PAGE) {
       print(text, cls);
+      trainingBuffer = null;
       return;
     }
     var page = lines.slice(0, TRAINING_PAGE).join('\n');

@@ -47,27 +47,18 @@ var Training = (function () {
             '  JFK = Nueva York (destino)',
           validate: /^AN\d{2}[A-Z]{3}(MIA|NYC)(JFK|NYC|EWR|LGA)/,
           success:
-            'Correcto! Veamos que significa cada parte.\n' +
-            'Ejemplo de una linea de resultado:\n\n' +
-            '  1 AA 100 J9 C9 D5 Y9 B9 M9 K4\n\n' +
-            '  1 = numero de linea (para reservar)\n' +
-            '  AA 100 = aerolinea y vuelo\n\n' +
-            'Los codigos como J9, Y9, K4 son:\n' +
-            '  letra = clase de servicio\n' +
-            '  numero = asientos disponibles\n' +
-            '    (9 = 9 o mas disponibles)\n\n' +
-            'Clases de servicio:\n' +
-            '  J, C, D = Ejecutiva (Business)\n' +
-            '  Y, B, M = Economica\n' +
-            '  K, Q, V = Economica con descuento\n\n' +
-            'Al final de la linea vera:\n' +
-            '  MIAJFK = ruta\n' +
-            '  0800 1100 = salida y llegada\n' +
-            '  E0/738 = tipo de avion\n' +
-            '  3:00 = duracion del vuelo',
+            'Correcto! Cada linea muestra un vuelo:\n' +
+            '  AA 100 = aerolinea y numero de vuelo\n' +
+            '  J9 Y9 K4 = clases y asientos disponibles\n' +
+            '  MIAJFK = ruta, 0800 1100 = horarios',
         },
         {
           instruction:
+            'Sobre los codigos de clase:\n' +
+            '  J, C, D = Ejecutiva (Business)\n' +
+            '  Y, B, M = Economica\n' +
+            '  K, Q, V = Economica con descuento\n' +
+            '  El numero = asientos (9 = 9 o mas)\n\n' +
             'Ahora veamos las tarifas. El comando es FQD.\n' +
             'Se escribe asi:\n\n' +
             '  FQD + origen + destino + /D + fecha\n' +
