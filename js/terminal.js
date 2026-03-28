@@ -82,13 +82,12 @@ document.addEventListener('DOMContentLoaded', function () {
   var _postLogin = false;
   (function checkUrlFlags() {
     var params = new URLSearchParams(window.location.search);
-    // Legacy support for old ?unlocked=true links
-    if (params.get('unlocked') === 'true') {
-      try { localStorage.setItem('ama_paid', 'true'); } catch (e) {}
-      window.history.replaceState({}, '', window.location.pathname);
-    }
     if (params.get('session_id')) _postPayment = true;
     if (params.get('logged_in') === '1') _postLogin = true;
+    // Strip query params
+    if (_postPayment || _postLogin) {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
   })();
 
   // ============================================================

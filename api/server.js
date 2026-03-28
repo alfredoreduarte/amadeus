@@ -69,11 +69,13 @@ function requireAuth(req, res, next) {
   next();
 }
 
+var IS_PRODUCTION = process.env.NODE_ENV === 'production' || SITE_URL.indexOf('https') === 0;
+
 function setSessionCookie(res, userId) {
   var token = jwt.sign({ userId: userId }, JWT_SECRET, { expiresIn: '30d' });
   res.cookie('session', token, {
     httpOnly: true,
-    secure: true,
+    secure: IS_PRODUCTION,
     sameSite: 'Lax',
     maxAge: COOKIE_MAX_AGE,
     path: '/',
@@ -314,6 +316,13 @@ app.post('/api/progress', authMiddleware, requireAuth, function (req, res) {
   }
 
   stmts.upsertProgress.run(req.user.id, exerciseIndex, stepIndex, JSON.stringify(validCompleted));
+  res.json({ ok: true });
+});
+
+// ============================================================
+//  HEALTH CHECK
+// ============================================================
+app.get('/api/health', function (req, res) {
   res.json({ ok: true });
 });
 
