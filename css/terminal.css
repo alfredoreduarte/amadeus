@@ -470,6 +470,9 @@ body {
   padding-bottom: 8px;
   scrollbar-width: thin;
   scrollbar-color: var(--c-dim) transparent;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
 }
 
 #output::-webkit-scrollbar { width: 6px; }
