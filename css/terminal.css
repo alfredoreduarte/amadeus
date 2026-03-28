@@ -338,8 +338,8 @@ body {
   display: block;
   width: 14px;
   height: 14px;
-  border-right: 2px solid #3a3f65;
-  border-bottom: 2px solid #3a3f65;
+  border-right: 2px solid var(--c-muted);
+  border-bottom: 2px solid var(--c-muted);
   transform: rotate(45deg);
   margin-top: -4px;
 }
@@ -350,7 +350,7 @@ body {
   font-weight: 400;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  color: #3a3f65;
+  color: var(--c-muted);
 }
 
 @keyframes gentleBounce {
@@ -420,7 +420,7 @@ body {
 .hero-hint {
   font-family: var(--font-display);
   font-size: 13px;
-  color: #3d3d55;
+  color: var(--c-muted);
   margin-top: 10px;
 }
 
