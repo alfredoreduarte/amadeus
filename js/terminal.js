@@ -18,6 +18,9 @@ document.addEventListener('DOMContentLoaded', function () {
   var paywallOverlay = document.getElementById('paywall-overlay');
   var paywallClose   = document.getElementById('paywall-close');
 
+  // Auto-focus hero input only on non-touch devices (avoids keyboard popup on mobile)
+  if (!('ontouchstart' in window)) heroInput.focus();
+
   var history      = [];
   var historyIndex = -1;
   var trainingBuffer = null;    // for paginated training output
