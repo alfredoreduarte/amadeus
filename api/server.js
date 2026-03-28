@@ -7,9 +7,15 @@ var { stmts, findOrCreateUser, generateToken } = require('./db');
 
 var app = express();
 var PORT = process.env.PORT || 3000;
-var JWT_SECRET = process.env.JWT_SECRET || 'change-me-in-production';
 var SITE_URL = process.env.SITE_URL || 'https://amadeus.alfredo.re';
 var COOKIE_MAX_AGE = 30 * 24 * 60 * 60 * 1000; // 30 days
+
+// Crash on startup if critical secrets are missing
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+  console.error('FATAL: JWT_SECRET must be set and at least 32 characters');
+  process.exit(1);
+}
+var JWT_SECRET = process.env.JWT_SECRET;
 
 var stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 var resend = new Resend(process.env.RESEND_API_KEY);
@@ -26,6 +32,15 @@ function checkRateLimit(key, max, windowMs) {
   rateLimits[key].count++;
   return rateLimits[key].count <= max;
 }
+
+// Clean up expired rate limit entries every 10 minutes
+setInterval(function () {
+  var now = Date.now();
+  var keys = Object.keys(rateLimits);
+  for (var i = 0; i < keys.length; i++) {
+    if (rateLimits[keys[i]].reset < now) delete rateLimits[keys[i]];
+  }
+}, 10 * 60 * 1000);
 
 // Middleware
 app.use(cookieParser());
@@ -75,11 +90,21 @@ app.post('/api/checkout', function (req, res) {
     return res.status(400).json({ error: 'Email invalido' });
   }
 
+  // Rate limit: 5 per email per hour, 20 per IP per hour
+  var ip = req.headers['x-real-ip'] || req.ip;
+  if (!checkRateLimit('co:' + email, 5, 3600000)) {
+    return res.status(429).json({ error: 'Demasiados intentos. Intenta en una hora.' });
+  }
+  if (!checkRateLimit('coip:' + ip, 20, 3600000)) {
+    return res.status(429).json({ error: 'Demasiados intentos. Intenta en una hora.' });
+  }
+
   var user = findOrCreateUser(email);
 
-  // Already paid — instant unlock, no Stripe needed
+  // Already paid — tell the frontend, but do NOT set a session cookie.
+  // The user must authenticate via magic link to prove they own this email.
+  // This prevents account takeover by anyone who knows a paid user's email.
   if (user.paid_at) {
-    setSessionCookie(res, user.id);
     return res.json({ already_paid: true });
   }
 
@@ -126,6 +151,7 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), funct
     var session = event.data.object;
     var userId = parseInt(session.client_reference_id, 10);
     if (userId) {
+      // Idempotent: only mark paid if not already paid (preserves original timestamp)
       stmts.markPaid.run(session.customer || null, session.id, userId);
       console.log('User', userId, 'marked as paid via webhook');
     }
@@ -147,8 +173,9 @@ app.get('/api/auth/session', authMiddleware, function (req, res) {
     if (!user) return res.json({ pending: true });
     if (!user.paid_at) return res.json({ pending: true });
 
-    // Paid! Set session cookie and return
+    // Paid! Set session cookie and clear the stripe_session_id to prevent replay
     setSessionCookie(res, user.id);
+    stmts.clearStripeSession.run(user.id);
     var progress = stmts.getProgress.get(user.id);
     return res.json({
       paid: true,
@@ -260,14 +287,6 @@ app.post('/api/auth/logout', function (req, res) {
 });
 
 // ============================================================
-//  GET /api/progress
-// ============================================================
-app.get('/api/progress', authMiddleware, requireAuth, function (req, res) {
-  var progress = stmts.getProgress.get(req.user.id);
-  res.json(progress || { exercise_index: -1, step_index: 0, exercises_completed: '[]' });
-});
-
-// ============================================================
 //  POST /api/progress
 // ============================================================
 app.post('/api/progress', authMiddleware, requireAuth, function (req, res) {
@@ -275,12 +294,26 @@ app.post('/api/progress', authMiddleware, requireAuth, function (req, res) {
   var stepIndex = req.body.step_index;
   var exercisesCompleted = req.body.exercises_completed;
 
-  if (typeof exerciseIndex !== 'number' || typeof stepIndex !== 'number') {
+  // Validate types and ranges
+  if (typeof exerciseIndex !== 'number' || exerciseIndex !== (exerciseIndex | 0) || exerciseIndex < -1 || exerciseIndex > 7) {
+    return res.status(400).json({ error: 'Invalid progress data' });
+  }
+  if (typeof stepIndex !== 'number' || stepIndex !== (stepIndex | 0) || stepIndex < 0 || stepIndex > 20) {
     return res.status(400).json({ error: 'Invalid progress data' });
   }
 
-  var completedStr = Array.isArray(exercisesCompleted) ? JSON.stringify(exercisesCompleted) : '[]';
-  stmts.upsertProgress.run(req.user.id, exerciseIndex, stepIndex, completedStr);
+  // Validate exercises_completed: must be array of integers 1-8
+  var validCompleted = [];
+  if (Array.isArray(exercisesCompleted)) {
+    for (var i = 0; i < exercisesCompleted.length && i < 8; i++) {
+      var n = exercisesCompleted[i];
+      if (typeof n === 'number' && n >= 1 && n <= 8 && n === (n | 0)) {
+        validCompleted.push(n);
+      }
+    }
+  }
+
+  stmts.upsertProgress.run(req.user.id, exerciseIndex, stepIndex, JSON.stringify(validCompleted));
   res.json({ ok: true });
 });
 

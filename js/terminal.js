@@ -437,10 +437,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
     Auth.createCheckout(email, function (result) {
       if (result.already_paid) {
-        hidePaywall();
-        print('', '');
-        print('Ya tienes acceso! Todos los ejercicios estan desbloqueados.', 'success');
-        print('Escribe TRAINING para ver los ejercicios.', 'system');
+        // User already paid — send magic link to verify email ownership
+        Auth.requestMagicLink(result.email, function (mlResult) {
+          hidePaywall();
+          print('', '');
+          if (mlResult.sent) {
+            print('Ya tienes acceso con este email!', 'success');
+            print('Te enviamos un enlace de acceso a ' + result.email, 'system');
+            print('Revisa tu bandeja de entrada.', 'system');
+          } else {
+            print('Ya tienes acceso con este email.', 'success');
+            print('Escribe LOGIN para iniciar sesion.', 'system');
+          }
+        });
         return;
       }
       if (result.error) {

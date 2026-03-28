@@ -124,20 +124,14 @@ var Auth = (function () {
     _readyCbs.push(cb);
   }
 
-  // Returns true if we're currently polling for payment confirmation
-  function isPollingPayment() {
-    var params = new URLSearchParams(window.location.search);
-    return !!params.get('session_id');
-  }
-
   // ---- Purchase flow ----
   function createCheckout(email, cb) {
     api('POST', '/checkout', { email: email }, function (err, data, status) {
       if (err) return cb({ error: 'Servicio temporalmente no disponible' });
+      if (status === 429) return cb({ error: data.error });
       if (data.already_paid) {
-        _user = { email: email, paid: true, progress: null };
-        try { localStorage.setItem('ama_paid', 'true'); } catch (e) {}
-        return cb({ already_paid: true });
+        // User already paid — send them a magic link to prove they own this email
+        return cb({ already_paid: true, email: email });
       }
       if (data.url) {
         window.location.href = data.url;
@@ -167,22 +161,36 @@ var Auth = (function () {
   }
 
   // ---- Progress sync ----
+  var _lastProgressData = null;
+
   function saveProgress(data) {
     if (!_user) return;
+    _lastProgressData = data;
     // Debounce: save 3 seconds after last call
     if (_savePending) clearTimeout(_savePending);
     _savePending = setTimeout(function () {
-      api('POST', '/progress', data, function () {});
+      _flushProgress();
     }, 3000);
   }
 
-  function loadProgress(cb) {
-    if (!_user) return cb(null);
-    api('GET', '/progress', null, function (err, data) {
-      if (err) return cb(null);
-      cb(data);
-    });
+  function _flushProgress() {
+    if (!_lastProgressData) return;
+    var data = _lastProgressData;
+    _lastProgressData = null;
+    _savePending = null;
+    api('POST', '/progress', data, function () {});
   }
+
+  // Flush pending progress on tab close/navigate away
+  window.addEventListener('beforeunload', function () {
+    if (_lastProgressData && _user) {
+      var blob = new Blob([JSON.stringify(_lastProgressData)], { type: 'application/json' });
+      navigator.sendBeacon('/api/progress', blob);
+      _lastProgressData = null;
+    }
+  });
+
+  // Progress is loaded inline from GET /api/auth/session — no separate endpoint needed
 
   // ---- Start ----
   init();
@@ -191,13 +199,11 @@ var Auth = (function () {
     isPaid: isPaid,
     isLoggedIn: isLoggedIn,
     user: user,
-    isReady: isReady,
     onReady: onReady,
     createCheckout: createCheckout,
     requestMagicLink: requestMagicLink,
     logout: logout,
     saveProgress: saveProgress,
-    loadProgress: loadProgress,
     // Hooks for terminal.js to set:
     _onPaymentConfirmed: null,
     _onPaymentTimeout: null,
