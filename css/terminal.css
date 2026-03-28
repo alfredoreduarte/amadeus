@@ -769,7 +769,7 @@ body {
   .decoder-command { padding-bottom: 22px; }
 
   .hero-arrow {
-    margin-bottom: 14px;
+    margin-bottom: 18px;
     gap: 4px;
   }
 
@@ -841,7 +841,7 @@ body {
   }
 
   #hero:focus-within .hero-arrow {
-    margin-bottom: 6px;
+    margin-bottom: 18px;
   }
 
   #hero:focus-within .hero-hint {
