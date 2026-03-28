@@ -1,0 +1,10 @@
+.git
+.gitignore
+.DS_Store
+*.swp
+*.swo
+reference/
+plans/
+CLAUDE.md
+Dockerfile
+docker-compose.yml
