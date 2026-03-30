@@ -17,6 +17,22 @@ document.addEventListener('DOMContentLoaded', function () {
   var helpClose      = document.getElementById('help-close');
   var paywallOverlay = document.getElementById('paywall-overlay');
   var paywallClose   = document.getElementById('paywall-close');
+  var paywallEmail   = document.getElementById('paywall-email');
+  var paywallBuy     = document.getElementById('paywall-buy');
+  var paywallEmailStep = document.getElementById('paywall-email-step');
+  var paywallLoading = document.getElementById('paywall-loading');
+  var paywallError   = document.getElementById('paywall-error');
+  var paywallErrorText = document.getElementById('paywall-error-text');
+
+  var loginOverlay   = document.getElementById('login-overlay');
+  var loginClose     = document.getElementById('login-close');
+  var loginEmail     = document.getElementById('login-email');
+  var loginSend      = document.getElementById('login-send');
+  var loginEmailStep = document.getElementById('login-email-step');
+  var loginSent      = document.getElementById('login-sent');
+  var loginError     = document.getElementById('login-error');
+  var loginErrorText = document.getElementById('login-error-text');
+  var heroLogin      = document.getElementById('hero-login');
 
   // Auto-focus hero input only on non-touch devices (avoids keyboard popup on mobile)
   if (!('ontouchstart' in window)) heroInput.focus();
@@ -61,11 +77,15 @@ document.addEventListener('DOMContentLoaded', function () {
     return _measureCtx.measureText(text.toUpperCase()).width;
   }
 
-  // ---- Check for Stripe unlock redirect ----
-  (function checkUnlock() {
+  // ---- Post-payment / post-login detection ----
+  var _postPayment = false;
+  var _postLogin = false;
+  (function checkUrlFlags() {
     var params = new URLSearchParams(window.location.search);
-    if (params.get('unlocked') === 'true') {
-      try { localStorage.setItem('ama_paid', 'true'); } catch (e) {}
+    if (params.get('session_id')) _postPayment = true;
+    if (params.get('logged_in') === '1') _postLogin = true;
+    // Strip query params
+    if (_postPayment || _postLogin) {
       window.history.replaceState({}, '', window.location.pathname);
     }
   })();
@@ -379,9 +399,15 @@ document.addEventListener('DOMContentLoaded', function () {
   // ============================================================
 
   function showPaywall() {
+    // Reset modal state
+    paywallEmailStep.classList.remove('hidden');
+    paywallLoading.classList.add('hidden');
+    paywallError.classList.add('hidden');
+    paywallEmail.value = '';
     paywallOverlay.classList.remove('hidden');
     paywallOverlay.offsetHeight;
     paywallOverlay.classList.add('visible');
+    paywallEmail.focus();
   }
 
   function hidePaywall() {
@@ -395,6 +421,107 @@ document.addEventListener('DOMContentLoaded', function () {
 
   paywallOverlay.addEventListener('click', function (e) {
     if (e.target === paywallOverlay) hidePaywall();
+  });
+
+  paywallBuy.addEventListener('click', function () {
+    var email = paywallEmail.value.trim();
+    if (!email || !email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      paywallError.classList.remove('hidden');
+      paywallErrorText.textContent = 'Ingresa un email valido';
+      return;
+    }
+    paywallEmailStep.classList.add('hidden');
+    paywallError.classList.add('hidden');
+    paywallLoading.classList.remove('hidden');
+
+    Auth.createCheckout(email, function (result) {
+      if (result.already_paid) {
+        // User already paid — send magic link to verify email ownership
+        Auth.requestMagicLink(result.email, function (mlResult) {
+          hidePaywall();
+          print('', '');
+          if (mlResult.sent) {
+            print('Ya tienes acceso con este email!', 'success');
+            print('Te enviamos un enlace de acceso a ' + result.email, 'system');
+            print('Revisa tu bandeja de entrada.', 'system');
+          } else {
+            print('Ya tienes acceso con este email.', 'success');
+            print('Escribe LOGIN para iniciar sesion.', 'system');
+          }
+        });
+        return;
+      }
+      if (result.error) {
+        paywallLoading.classList.add('hidden');
+        paywallEmailStep.classList.remove('hidden');
+        paywallError.classList.remove('hidden');
+        paywallErrorText.textContent = result.error;
+      }
+      // If successful, Auth.createCheckout redirects to Stripe — no callback needed
+    });
+  });
+
+  paywallEmail.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') paywallBuy.click();
+  });
+
+  // ============================================================
+  //  LOGIN MODAL
+  // ============================================================
+
+  function showLogin() {
+    loginEmailStep.classList.remove('hidden');
+    loginSent.classList.add('hidden');
+    loginError.classList.add('hidden');
+    loginEmail.value = '';
+    loginOverlay.classList.remove('hidden');
+    loginOverlay.offsetHeight;
+    loginOverlay.classList.add('visible');
+    loginEmail.focus();
+  }
+
+  function hideLogin() {
+    loginOverlay.classList.remove('visible');
+    setTimeout(function () {
+      loginOverlay.classList.add('hidden');
+    }, 300);
+  }
+
+  loginClose.addEventListener('click', hideLogin);
+
+  loginOverlay.addEventListener('click', function (e) {
+    if (e.target === loginOverlay) hideLogin();
+  });
+
+  loginSend.addEventListener('click', function () {
+    var email = loginEmail.value.trim();
+    if (!email || !email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      loginError.classList.remove('hidden');
+      loginErrorText.textContent = 'Ingresa un email valido';
+      return;
+    }
+    loginEmailStep.classList.add('hidden');
+    loginError.classList.add('hidden');
+
+    Auth.requestMagicLink(email, function (result) {
+      if (result.sent) {
+        loginSent.classList.remove('hidden');
+      } else {
+        loginEmailStep.classList.remove('hidden');
+        loginError.classList.remove('hidden');
+        loginErrorText.textContent = result.error;
+      }
+    });
+  });
+
+  loginEmail.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') loginSend.click();
+  });
+
+  // "Ya tengo acceso" link in hero
+  heroLogin.addEventListener('click', function (e) {
+    e.preventDefault();
+    showLogin();
   });
 
   // ============================================================
@@ -450,6 +577,34 @@ document.addEventListener('DOMContentLoaded', function () {
     // Any other command clears the training buffer
     trainingBuffer = null;
     trainingNextStep = null;
+
+    // Auth commands
+    if (cmd === 'LOGIN') {
+      showLogin();
+      return;
+    }
+
+    if (cmd === 'CUENTA') {
+      if (Auth.isLoggedIn()) {
+        var u = Auth.user();
+        print('', '');
+        print('CUENTA: ' + u.email, 'system');
+        print('Estado: ' + (u.paid ? 'PRO (acceso completo)' : 'Gratuito'), 'system');
+      } else {
+        print('', '');
+        print('No has iniciado sesion.', 'system');
+        print('Escribe LOGIN para acceder a tu cuenta.', 'system');
+      }
+      return;
+    }
+
+    if (cmd === 'LOGOUT') {
+      Auth.logout(function () {
+        print('', '');
+        print('Sesion cerrada.', 'system');
+      });
+      return;
+    }
 
     // Training meta-commands
     if (cmd === 'TRAINING' || cmd.startsWith('TRAINING ') ||
@@ -545,4 +700,88 @@ document.addEventListener('DOMContentLoaded', function () {
     if (e.target.closest('#help-panel')) return;
     input.focus();
   });
+
+  // ============================================================
+  //  POST-PAYMENT / POST-LOGIN HOOKS
+  // ============================================================
+
+  Auth._onPaymentConfirmed = function () {
+    // Payment confirmed via polling — show terminal with success message
+    if (!terminal.classList.contains('visible')) {
+      // Still on hero — transition to terminal
+      hero.classList.add('fade-out');
+      setTimeout(function () {
+        hero.classList.add('hidden');
+        terminal.classList.remove('hidden');
+        helpToggle.classList.remove('hidden');
+        print('', '');
+        print('Pago confirmado! Todos los ejercicios estan desbloqueados.', 'success');
+        print('Escribe TRAINING para ver los ejercicios.', 'system');
+        terminal.offsetHeight;
+        terminal.classList.add('visible');
+        input.focus();
+      }, 500);
+    } else {
+      print('', '');
+      print('Pago confirmado! Todos los ejercicios estan desbloqueados.', 'success');
+      print('Escribe TRAINING para ver los ejercicios.', 'system');
+    }
+  };
+
+  Auth._onPaymentTimeout = function () {
+    if (!terminal.classList.contains('visible')) {
+      hero.classList.add('fade-out');
+      setTimeout(function () {
+        hero.classList.add('hidden');
+        terminal.classList.remove('hidden');
+        helpToggle.classList.remove('hidden');
+        print('', '');
+        print('Tu pago fue recibido. Si los ejercicios no se desbloquean, recarga la pagina en unos segundos.', 'system');
+        terminal.offsetHeight;
+        terminal.classList.add('visible');
+        input.focus();
+      }, 500);
+    } else {
+      print('', '');
+      print('Tu pago fue recibido. Si los ejercicios no se desbloquean, recarga la pagina en unos segundos.', 'system');
+    }
+  };
+
+  // If returning from payment, show a loading message
+  if (_postPayment) {
+    hero.classList.add('fade-out');
+    setTimeout(function () {
+      hero.classList.add('hidden');
+      terminal.classList.remove('hidden');
+      helpToggle.classList.remove('hidden');
+      print('Verificando tu pago...', 'system');
+      terminal.offsetHeight;
+      terminal.classList.add('visible');
+    }, 500);
+  }
+
+  // If returning from magic link login
+  if (_postLogin) {
+    Auth.onReady(function (user) {
+      if (user) {
+        if (!terminal.classList.contains('visible')) {
+          hero.classList.add('fade-out');
+          setTimeout(function () {
+            hero.classList.add('hidden');
+            terminal.classList.remove('hidden');
+            helpToggle.classList.remove('hidden');
+            print('', '');
+            print('Sesion iniciada. Bienvenido/a de vuelta!', 'success');
+            if (user.paid) {
+              print('Todos los ejercicios estan desbloqueados.', 'system');
+            }
+            print('Escribe TRAINING para ver los ejercicios.', 'system');
+            terminal.offsetHeight;
+            terminal.classList.add('visible');
+            input.focus();
+          }, 500);
+        }
+      }
+    });
+  }
 });

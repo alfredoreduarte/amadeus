@@ -48,12 +48,13 @@
       </div>
 
       <div class="hero-features anim" style="--d:6">
-        <span>5 ejercicios guiados</span>
+        <span>8 ejercicios guiados</span>
         <span class="hero-dot"></span>
         <span>Escenarios reales</span>
         <span class="hero-dot"></span>
         <span>Practica sin riesgo</span>
       </div>
+      <a href="#" id="hero-login" class="hero-login anim" style="--d:7">Ya tengo acceso</a>
     </div>
   </div>
 
@@ -121,6 +122,11 @@
       <p><code>PISTA</code> Ayuda en el paso actual</p>
       <p><code>SIGUIENTE</code> Saltar paso</p>
 
+      <h4>CUENTA</h4>
+      <p><code>LOGIN</code> Iniciar sesion</p>
+      <p><code>CUENTA</code> Ver estado de cuenta</p>
+      <p><code>LOGOUT</code> Cerrar sesion</p>
+
       <h4>OTROS</h4>
       <p><code>MD</code> / <code>MU</code> Scroll abajo/arriba</p>
       <p><code>CLEAR</code> Limpiar pantalla</p>
@@ -132,15 +138,44 @@
     <div id="paywall-modal">
       <h2>Desbloquea el Curso Completo</h2>
       <p>Accede a todos los ejercicios y domina Amadeus a tu ritmo.</p>
-      <div class="paywall-price">$3 <span>USD</span></div>
+      <div class="paywall-price">$9 <span>USD</span></div>
       <p class="paywall-detail">Pago unico &middot; Acceso permanente</p>
-      <a id="paywall-buy" href="https://buy.stripe.com/REPLACE_WITH_YOUR_LINK" target="_blank" class="paywall-btn">Comprar Acceso</a>
+      <div id="paywall-email-step">
+        <input type="email" id="paywall-email" placeholder="tu@email.com" autocomplete="email" spellcheck="false">
+        <button id="paywall-buy" class="paywall-btn">Comprar Acceso</button>
+      </div>
+      <div id="paywall-loading" class="hidden">
+        <p class="paywall-loading-text">Redirigiendo a pago seguro...</p>
+      </div>
+      <div id="paywall-error" class="hidden">
+        <p id="paywall-error-text" class="paywall-error-text"></p>
+      </div>
       <button id="paywall-close" class="paywall-close-btn">Volver</button>
+    </div>
+  </div>
+
+  <!-- Login modal (for returning paid users) -->
+  <div id="login-overlay" class="hidden">
+    <div id="login-modal">
+      <h2>Accede a tu Cuenta</h2>
+      <p>Ingresa tu email para recibir un enlace de acceso.</p>
+      <div id="login-email-step">
+        <input type="email" id="login-email" placeholder="tu@email.com" autocomplete="email" spellcheck="false">
+        <button id="login-send" class="paywall-btn">Enviar Enlace</button>
+      </div>
+      <div id="login-sent" class="hidden">
+        <p class="paywall-loading-text">Revisa tu bandeja de entrada. Te enviamos un enlace de acceso.</p>
+      </div>
+      <div id="login-error" class="hidden">
+        <p id="login-error-text" class="paywall-error-text"></p>
+      </div>
+      <button id="login-close" class="paywall-close-btn">Volver</button>
     </div>
   </div>
 
   <script src="js/data.js"></script>
   <script src="js/amadeus.js"></script>
+  <script src="js/auth.js"></script>
   <script src="js/training.js"></script>
   <script src="js/terminal.js"></script>
 </body>

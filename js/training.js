@@ -8,6 +8,7 @@ var Training = (function () {
   var active   = false;
   var exIdx    = -1;
   var stepIdx  = 0;
+  var completedExercises = [];
 
   var FREE_LIMIT = 2; // exercises 1-2 are free
 
@@ -907,6 +908,8 @@ var Training = (function () {
   // ================================================================
 
   function isPaid() {
+    // Use Auth module if available, fall back to localStorage
+    if (typeof Auth !== 'undefined') return Auth.isPaid();
     try {
       return localStorage.getItem('ama_paid') === 'true';
     } catch (e) {
@@ -944,9 +947,10 @@ var Training = (function () {
 
     exercises.forEach(function (ex, i) {
       var num = i + 1;
+      var done = completedExercises.indexOf(num) !== -1;
       var tag = num <= FREE_LIMIT ? 'GRATIS' : (paid ? '' : 'PRO');
       var title = SHORT_TITLES[i] || ex.title;
-      var line = ' ' + num + '. ' + title;
+      var line = ' ' + num + '. ' + (done ? '* ' : '  ') + title;
       if (tag) line += '  [' + tag + ']';
       lines.push(line);
     });
@@ -954,7 +958,7 @@ var Training = (function () {
     if (!paid) {
       lines.push('');
       lines.push(LINE);
-      lines.push('Ejercicios [PRO]: $3 USD.');
+      lines.push('Ejercicios [PRO]: $9 USD.');
       lines.push(ACT + 'Escriba COMPRAR para desbloquear.');
     }
 
@@ -1090,6 +1094,10 @@ var Training = (function () {
     var nextLines = [];
     if (stepIdx >= exercises[exIdx].steps.length) {
       // Exercise complete
+      var exerciseNum = exIdx + 1;
+      if (completedExercises.indexOf(exerciseNum) === -1) {
+        completedExercises.push(exerciseNum);
+      }
       nextLines.push('');
       nextLines.push(' ' + LINE);
       nextLines.push('');
@@ -1098,10 +1106,26 @@ var Training = (function () {
       });
       nextLines.push('');
       active = false;
+      // Save progress — exercise completed
+      if (typeof Auth !== 'undefined') {
+        Auth.saveProgress({
+          exercise_index: -1,
+          step_index: 0,
+          exercises_completed: completedExercises,
+        });
+      }
     } else {
       nextLines.push('');
       nextLines.push(' ' + LINE);
       nextLines.push(formatStep());
+      // Save progress — step completed
+      if (typeof Auth !== 'undefined') {
+        Auth.saveProgress({
+          exercise_index: exIdx,
+          step_index: stepIdx,
+          exercises_completed: completedExercises,
+        });
+      }
     }
 
     return {
@@ -1109,6 +1133,26 @@ var Training = (function () {
       next: nextLines.join('\n'),
       type: 'training-success',
     };
+  }
+
+  // ================================================================
+  //  PROGRESS RESTORE
+  // ================================================================
+
+  function restoreProgress(data) {
+    if (!data) return;
+    try {
+      var completed = JSON.parse(data.exercises_completed || '[]');
+      if (Array.isArray(completed)) completedExercises = completed;
+    } catch (e) {}
+  }
+
+  // Load progress from server on auth ready
+  if (typeof Auth !== 'undefined') {
+    Auth.onReady(function (user) {
+      if (!user || !user.progress) return;
+      restoreProgress(user.progress);
+    });
   }
 
   // ================================================================
@@ -1143,5 +1187,7 @@ var Training = (function () {
     isPaid: function () {
       return isPaid();
     },
+
+    restoreProgress: restoreProgress,
   };
 })();
