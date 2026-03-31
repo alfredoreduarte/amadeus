@@ -115,7 +115,7 @@ app.post('/api/checkout', function (req, res) {
     line_items: [{
       price_data: {
         currency: 'usd',
-        product_data: { name: 'Amadeus - Curso Completo' },
+        product_data: { name: 'AgenteMaster - Curso Completo GDS' },
         unit_amount: 900, // $9.00
       },
       quantity: 1,
@@ -230,12 +230,12 @@ app.post('/api/auth/magic-link', function (req, res) {
   var link = SITE_URL + '/api/auth/verify?token=' + token;
 
   resend.emails.send({
-    from: 'Amadeus Course <noreply@amadeus.alfredo.re>',
+    from: 'AgenteMaster <noreply@agentemaster.com>',
     to: email,
-    subject: 'Tu acceso a Aprende Amadeus',
+    subject: 'Tu acceso a AgenteMaster',
     html: [
       '<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:20px;">',
-      '<h2 style="color:#4fc3f7;">Aprende Amadeus</h2>',
+      '<h2 style="color:#4fc3f7;">AgenteMaster</h2>',
       '<p>Haz clic en el boton para acceder a tu cuenta:</p>',
       '<a href="' + link + '" style="display:inline-block;background:#4fc3f7;color:#0a0e27;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold;">Acceder a mi cuenta</a>',
       '<p style="color:#888;font-size:13px;margin-top:20px;">Este enlace expira en 15 minutos. Si no solicitaste este acceso, ignora este email.</p>',

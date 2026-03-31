@@ -856,6 +856,35 @@ body {
   color: var(--c-action);
 }
 
+/* ---- Disclaimer footer (hero) ---- */
+
+#hero { position: relative; }
+
+.site-disclaimer {
+  position: absolute;
+  bottom: 16px;
+  left: 24px;
+  right: 24px;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 11px;
+  line-height: 1.5;
+  color: #8585a0;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.site-disclaimer p { margin: 0; }
+
+/* ---- Paywall disclaimer ---- */
+
+.paywall-disclaimer {
+  font-size: 11px;
+  color: #8585a0;
+  text-align: center;
+  margin-top: 12px;
+}
+
 /* ============================================================
    RESPONSIVE
    ============================================================ */
@@ -936,11 +965,19 @@ body {
     overflow: hidden;
   }
 
+  .site-disclaimer {
+    bottom: 8px;
+    left: 16px;
+    right: 16px;
+    font-size: 10px;
+  }
+
   #hero:focus-within .hero-badge,
   #hero:focus-within .hero-title,
   #hero:focus-within .hero-subtitle,
   #hero:focus-within .hero-features,
-  #hero:focus-within .hero-login {
+  #hero:focus-within .hero-login,
+  #hero:focus-within .site-disclaimer {
     max-height: 0;
     margin: 0;
     padding: 0;
