@@ -66,6 +66,49 @@ document.addEventListener('DOMContentLoaded', function () {
   syncWidths();
   window.addEventListener('resize', syncWidths);
 
+  // ---- Geolocation-based hero personalization ----
+  var GEO_ROUTES = {
+    'PY': { origin: 'ASU', dest: 'MAD', originCity: 'Asunci\u00f3n',    destCity: 'Madrid' },
+    'AR': { origin: 'EZE', dest: 'MIA', originCity: 'Buenos Aires',     destCity: 'Miami' },
+    'BO': { origin: 'VVI', dest: 'MIA', originCity: 'Santa Cruz',       destCity: 'Miami' },
+    'CO': { origin: 'BOG', dest: 'MIA', originCity: 'Bogot\u00e1',      destCity: 'Miami' },
+    'BR': { origin: 'GRU', dest: 'MIA', originCity: 'S\u00e3o Paulo',   destCity: 'Miami' },
+    'MX': { origin: 'MEX', dest: 'MIA', originCity: 'M\u00e9xico',      destCity: 'Miami' },
+    'PE': { origin: 'LIM', dest: 'MIA', originCity: 'Lima',             destCity: 'Miami' },
+    'CL': { origin: 'SCL', dest: 'MIA', originCity: 'Santiago',         destCity: 'Miami' },
+    'PA': { origin: 'PTY', dest: 'MIA', originCity: 'Panam\u00e1',      destCity: 'Miami' },
+    'ES': { origin: 'MAD', dest: 'MIA', originCity: 'Madrid',           destCity: 'Miami' },
+  };
+
+  function applyGeoRoute(route) {
+    if (heroInput.value.length > 0) return; // user already typing
+    EXAMPLE = 'AN20MAR' + route.origin + route.dest;
+    var originSeg = decoderCommand.querySelector('[data-segment="origin"]');
+    var destSeg   = decoderCommand.querySelector('[data-segment="dest"]');
+    originSeg.querySelector('.seg-chars').textContent = route.origin;
+    originSeg.querySelector('.seg-label').textContent = route.originCity;
+    destSeg.querySelector('.seg-chars').textContent   = route.dest;
+    destSeg.querySelector('.seg-label').textContent    = route.destCity;
+    heroInput.placeholder = EXAMPLE;
+    syncWidths();
+  }
+
+  // Check sessionStorage cache first, then fetch from API
+  var cachedCC = null;
+  try { cachedCC = sessionStorage.getItem('geo_cc'); } catch (e) {}
+  if (cachedCC && GEO_ROUTES[cachedCC]) {
+    applyGeoRoute(GEO_ROUTES[cachedCC]);
+  } else {
+    fetch('https://get.geojs.io/v1/ip/country.json')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var cc = (data.country || '').trim().toUpperCase();
+        try { sessionStorage.setItem('geo_cc', cc); } catch (e) {}
+        if (GEO_ROUTES[cc]) applyGeoRoute(GEO_ROUTES[cc]);
+      })
+      .catch(function () {}); // silent fallback to default
+  }
+
   // ---- Text measurement for sparkle positioning ----
   var _measureCtx = null;
   function measureText(text) {
