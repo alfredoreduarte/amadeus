@@ -7,7 +7,7 @@
   <meta name="description" content="Domina el sistema Amadeus con ejercicios interactivos. Practica comandos reales en un simulador sin riesgo.">
   <meta property="og:title" content="Aprende Amadeus - Simulador Interactivo">
   <meta property="og:description" content="Domina el sistema Amadeus con ejercicios interactivos. Practica comandos reales en un simulador sin riesgo.">
-  <meta property="og:image" content="https://amadeus.alfredo.re/og.jpg">
+  <meta property="og:image" content="https://agentemaster.com/og.jpg">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,7 +19,7 @@
 <body>
 
   <!-- Hero / Landing -->
-  <div id="hero">
+  <div id="hero" class="fullscreen-view">
     <div class="hero-content">
       <div class="hero-badge anim" style="--d:0">SIMULADOR INTERACTIVO</div>
       <h1 class="hero-title anim" style="--d:1">Aprende Amadeus</h1>
@@ -56,6 +56,46 @@
         <span>Practica sin riesgo</span>
       </div>
       <a href="#" id="hero-login" class="hero-login anim" style="--d:7">Ya tengo acceso</a>
+    </div>
+  </div>
+
+  <!-- Dashboard for logged-in users (hidden by default) -->
+  <div id="dashboard" class="fullscreen-view hidden">
+    <div class="dash-container">
+      <div class="dash-header">
+        <div class="dash-session">
+          <span class="dash-status-dot"></span>
+          <span class="dash-session-label">SESION ACTIVA</span>
+          <span class="dash-email" id="dash-email"></span>
+        </div>
+        <button id="dash-logout" class="dash-logout">LOGOUT</button>
+      </div>
+
+      <div class="dash-body">
+        <h1 class="dash-welcome">Bienvenido/a de vuelta</h1>
+        <div class="dash-progress-summary">
+          <span class="dash-progress-count" id="dash-progress-count">0</span>
+          <span class="dash-progress-label" id="dash-progress-label"></span>
+        </div>
+        <div class="dash-progress-bar">
+          <div class="dash-progress-fill" id="dash-progress-fill"></div>
+        </div>
+
+        <div class="dash-board" id="dash-board">
+          <!-- Exercise rows populated by JS -->
+        </div>
+
+        <div class="dash-actions">
+          <button id="dash-continue" class="dash-btn dash-btn-primary hidden">
+            <span class="dash-btn-icon">&gt;_</span>
+            <span id="dash-continue-label">Continuar Ejercicio</span>
+          </button>
+          <button id="dash-open" class="dash-btn dash-btn-secondary">
+            <span class="dash-btn-icon">&gt;</span>
+            IR A CONSOLA AMADEUS
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 

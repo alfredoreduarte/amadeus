@@ -63,7 +63,8 @@ body {
    HERO / LANDING
    ============================================================ */
 
-#hero {
+/* Shared fullscreen view (hero, dashboard) */
+.fullscreen-view {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -74,7 +75,7 @@ body {
   transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
-#hero.fade-out {
+.fullscreen-view.fade-out {
   opacity: 0;
   transform: translateY(-24px);
   pointer-events: none;
@@ -862,7 +863,7 @@ body {
 @media (max-width: 600px) {
   body { font-size: 15px; }
 
-  #hero { padding: 16px; }
+  .fullscreen-view { padding: 16px; }
 
   .hero-badge {
     margin-bottom: 12px;
@@ -958,5 +959,317 @@ body {
 
   #hero:focus-within .hero-hint {
     margin-top: 6px;
+  }
+}
+
+/* ============================================================
+   DASHBOARD — logged-in user welcome screen
+   (uses .fullscreen-view for layout/fade — defined above)
+   ============================================================ */
+
+.dash-container {
+  max-width: 560px;
+  width: 100%;
+}
+
+/* ---- Header bar ---- */
+
+.dash-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: rgba(15, 19, 53, 0.6);
+  border: 1px solid var(--c-border);
+  border-radius: 8px;
+  margin-bottom: 36px;
+  animation: fadeUp 0.5s ease both;
+}
+
+.dash-session {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--c-muted);
+  min-width: 0;
+}
+
+.dash-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--c-date);
+  box-shadow: 0 0 8px rgba(105, 240, 174, 0.5);
+  flex-shrink: 0;
+  animation: dotPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes dotPulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(105, 240, 174, 0.5); }
+  50%      { box-shadow: 0 0 14px rgba(105, 240, 174, 0.8); }
+}
+
+.dash-session-label {
+  font-family: var(--font-mono);
+  letter-spacing: 1px;
+  color: var(--c-date);
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.dash-email {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--c-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dash-logout {
+  background: none;
+  border: 1px solid var(--c-border);
+  color: var(--c-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  flex-shrink: 0;
+}
+
+.dash-logout:hover {
+  color: var(--c-error);
+  border-color: rgba(255, 107, 107, 0.3);
+}
+
+/* ---- Body ---- */
+
+.dash-body {
+  animation: fadeUp 0.6s ease both;
+  animation-delay: 0.1s;
+}
+
+.dash-welcome {
+  font-family: var(--font-display);
+  font-size: clamp(24px, 5vw, 32px);
+  font-weight: 700;
+  color: #f0f0f0;
+  margin-bottom: 16px;
+  letter-spacing: -0.5px;
+}
+
+/* ---- Progress summary ---- */
+
+.dash-progress-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.dash-progress-count {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--c-date);
+  line-height: 1;
+}
+
+.dash-progress-label {
+  font-family: var(--font-display);
+  font-size: 14px;
+  color: var(--c-muted);
+}
+
+.dash-progress-bar {
+  width: 100%;
+  height: 4px;
+  background: var(--c-dim);
+  border-radius: 2px;
+  margin-bottom: 28px;
+  overflow: hidden;
+}
+
+.dash-progress-fill {
+  height: 100%;
+  background: var(--c-date);
+  border-radius: 2px;
+  width: 0%;
+  transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 0 10px rgba(105, 240, 174, 0.3);
+}
+
+/* ---- Exercise board (departure-board style) ---- */
+
+.dash-board {
+  border: 1px solid var(--c-border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.dash-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  gap: 10px;
+  border-bottom: 1px solid rgba(26, 32, 80, 0.6);
+  transition: background 0.15s;
+  cursor: pointer;
+}
+
+.dash-row:last-child {
+  border-bottom: none;
+}
+
+.dash-row:hover {
+  background: rgba(79, 195, 247, 0.04);
+}
+
+.dash-row-num {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-muted);
+  width: 20px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.dash-row-title {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--c-text);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dash-row-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  color: var(--tag-c);
+  background: var(--tag-bg);
+  border: 1px solid var(--tag-bd);
+}
+
+.dash-tag-done   { --tag-c: var(--c-date);    --tag-bg: rgba(105,240,174,0.1);  --tag-bd: rgba(105,240,174,0.2); }
+.dash-tag-free   { --tag-c: var(--c-action);   --tag-bg: rgba(79,195,247,0.08);  --tag-bd: rgba(79,195,247,0.15); }
+.dash-tag-pro    { --tag-c: var(--c-airport);   --tag-bg: rgba(255,215,64,0.08);  --tag-bd: rgba(255,215,64,0.15); }
+.dash-tag-locked { --tag-c: #3d3d55;           --tag-bg: rgba(42,47,85,0.3);     --tag-bd: rgba(42,47,85,0.4); }
+
+.dash-row.done .dash-row-num {
+  color: var(--c-date);
+}
+
+.dash-row.locked {
+  cursor: default;
+}
+
+.dash-row.locked .dash-row-title {
+  color: #3d3d55;
+}
+
+.dash-row.locked:hover {
+  background: transparent;
+}
+
+/* ---- Action buttons ---- */
+
+.dash-actions {
+  display: flex;
+  gap: 12px;
+  animation: fadeUp 0.6s ease both;
+  animation-delay: 0.25s;
+}
+
+.dash-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 24px;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.1s, box-shadow 0.2s;
+}
+
+.dash-btn:active { transform: translateY(0); }
+.dash-btn:hover  { transform: translateY(-1px); }
+
+.dash-btn-primary {
+  color: var(--c-bg);
+  background: var(--c-date);
+  border: none;
+  box-shadow: 0 0 20px rgba(105, 240, 174, 0.15);
+}
+
+.dash-btn-primary:hover {
+  background: #5ae09e;
+  box-shadow: 0 0 30px rgba(105, 240, 174, 0.25);
+}
+
+.dash-btn-secondary {
+  color: var(--c-text);
+  background: var(--c-surface);
+  border: 1px solid var(--c-dim);
+}
+
+.dash-btn-secondary:hover {
+  border-color: var(--c-action);
+}
+
+.dash-btn-icon {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  opacity: 0.6;
+}
+
+/* ---- Dashboard responsive ---- */
+
+@media (max-width: 600px) {
+  .dash-header {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 12px;
+    margin-bottom: 24px;
+  }
+
+  .dash-session { flex: 1; min-width: 0; }
+
+  .dash-welcome {
+    font-size: 22px;
+    margin-bottom: 12px;
+  }
+
+  .dash-progress-count { font-size: 22px; }
+
+  .dash-row { padding: 9px 10px; gap: 8px; }
+  .dash-row-title { font-size: 12px; }
+
+  .dash-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .dash-btn {
+    padding: 14px 20px;
+    font-size: 15px;
   }
 }
