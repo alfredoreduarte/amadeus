@@ -428,5 +428,12 @@ function lookupFares(orig, dest) {
       if (DATA.fares[key]) return DATA.fares[key];
     }
   }
+  // Try reverse direction (fares are often filed under one key for both directions)
+  for (var i = 0; i < dList.length; i++) {
+    for (var j = 0; j < oList.length; j++) {
+      key = dList[i] + '-' + oList[j];
+      if (DATA.fares[key]) return DATA.fares[key];
+    }
+  }
   return null;
 }

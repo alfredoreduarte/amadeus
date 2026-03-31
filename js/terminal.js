@@ -93,17 +93,21 @@ document.addEventListener('DOMContentLoaded', function () {
     syncWidths();
   }
 
-  (function fetchGeo() {
-    try {
-      fetch('https://get.geojs.io/v1/ip/country.json')
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-          var cc = (data.country || '').trim().toUpperCase();
-          if (GEO_ROUTES[cc]) applyGeoRoute(GEO_ROUTES[cc]);
-        })
-        .catch(function () {}); // silent fallback to default
-    } catch (e) { /* fetch not supported — keep default */ }
-  })();
+  // Check sessionStorage cache first, then fetch from API
+  var cachedCC = null;
+  try { cachedCC = sessionStorage.getItem('geo_cc'); } catch (e) {}
+  if (cachedCC && GEO_ROUTES[cachedCC]) {
+    applyGeoRoute(GEO_ROUTES[cachedCC]);
+  } else {
+    fetch('https://get.geojs.io/v1/ip/country.json')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var cc = (data.country || '').trim().toUpperCase();
+        try { sessionStorage.setItem('geo_cc', cc); } catch (e) {}
+        if (GEO_ROUTES[cc]) applyGeoRoute(GEO_ROUTES[cc]);
+      })
+      .catch(function () {}); // silent fallback to default
+  }
 
   // ---- Text measurement for sparkle positioning ----
   var _measureCtx = null;
