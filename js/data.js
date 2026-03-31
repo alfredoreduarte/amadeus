@@ -222,6 +222,41 @@ var DATA = {
     // --- ASU - VVI ---
     { al:'OB', fn:'731', from:'ASU', to:'VVI', dep:'0800', arr:'0930', dur:'1:30', eq:'738', classes:{J:0,C:0,D:0,Y:9,B:9,M:8,K:6} },
     { al:'PZ', fn:'301', from:'ASU', to:'VVI', dep:'1200', arr:'1330', dur:'1:30', eq:'320', classes:{J:0,C:0,D:0,Y:9,B:7,M:5,K:3} },
+
+    // --- VVI - ASU ---
+    { al:'OB', fn:'732', from:'VVI', to:'ASU', dep:'1100', arr:'1230', dur:'1:30', eq:'738', classes:{J:0,C:0,D:0,Y:9,B:9,M:7,K:5} },
+
+    // --- EZE - MIA ---
+    { al:'AR', fn:'1301',from:'EZE', to:'MIA', dep:'2200', arr:'0600', dur:'9:00', eq:'332', classes:{J:5,C:3,D:1,Y:9,B:9,M:8,K:4} },
+    { al:'AA', fn:'930', from:'EZE', to:'MIA', dep:'2000', arr:'0400', dur:'9:00', eq:'77W', classes:{J:3,C:1,D:0,Y:9,B:8,M:6,K:3} },
+
+    // --- MIA - EZE ---
+    { al:'AR', fn:'1300',from:'MIA', to:'EZE', dep:'2100', arr:'0800', dur:'10:00', eq:'332', classes:{J:6,C:4,D:2,Y:9,B:9,M:9,K:5} },
+    { al:'AA', fn:'931', from:'MIA', to:'EZE', dep:'1900', arr:'0600', dur:'10:00', eq:'77W', classes:{J:4,C:2,D:0,Y:9,B:9,M:7,K:3} },
+
+    // --- VVI - MIA ---
+    { al:'OB', fn:'710', from:'VVI', to:'MIA', dep:'2300', arr:'0600', dur:'8:00', eq:'738', classes:{J:0,C:0,D:0,Y:9,B:8,M:6,K:4} },
+    { al:'AA', fn:'942', from:'VVI', to:'MIA', dep:'2100', arr:'0400', dur:'8:00', eq:'738', classes:{J:3,C:1,D:0,Y:9,B:9,M:7,K:4} },
+
+    // --- MIA - VVI ---
+    { al:'OB', fn:'711', from:'MIA', to:'VVI', dep:'0900', arr:'1600', dur:'7:00', eq:'738', classes:{J:0,C:0,D:0,Y:9,B:9,M:7,K:5} },
+    { al:'AA', fn:'943', from:'MIA', to:'VVI', dep:'1100', arr:'1800', dur:'7:00', eq:'738', classes:{J:3,C:1,D:0,Y:9,B:8,M:6,K:3} },
+
+    // --- LIM - MIA ---
+    { al:'LA', fn:'2050',from:'LIM', to:'MIA', dep:'2300', arr:'0530', dur:'5:30', eq:'789', classes:{J:6,C:4,D:2,Y:9,B:9,M:8,K:5} },
+    { al:'AV', fn:'150', from:'LIM', to:'MIA', dep:'0100', arr:'0730', dur:'5:30', eq:'320', classes:{J:3,C:1,D:0,Y:9,B:9,M:7,K:4} },
+
+    // --- MIA - LIM ---
+    { al:'LA', fn:'2051',from:'MIA', to:'LIM', dep:'1200', arr:'1830', dur:'5:30', eq:'789', classes:{J:7,C:5,D:3,Y:9,B:9,M:9,K:6} },
+    { al:'AV', fn:'151', from:'MIA', to:'LIM', dep:'1400', arr:'2030', dur:'5:30', eq:'320', classes:{J:4,C:2,D:0,Y:9,B:8,M:6,K:3} },
+
+    // --- SCL - MIA ---
+    { al:'LA', fn:'600', from:'SCL', to:'MIA', dep:'2200', arr:'0600', dur:'9:00', eq:'789', classes:{J:5,C:3,D:1,Y:9,B:9,M:8,K:4} },
+    { al:'AA', fn:'945', from:'SCL', to:'MIA', dep:'2000', arr:'0400', dur:'9:00', eq:'77W', classes:{J:3,C:1,D:0,Y:9,B:8,M:6,K:3} },
+
+    // --- MIA - SCL ---
+    { al:'LA', fn:'601', from:'MIA', to:'SCL', dep:'2100', arr:'0800', dur:'10:00', eq:'789', classes:{J:6,C:4,D:2,Y:9,B:9,M:9,K:5} },
+    { al:'AA', fn:'944', from:'MIA', to:'SCL', dep:'1900', arr:'0600', dur:'10:00', eq:'77W', classes:{J:4,C:2,D:0,Y:9,B:7,M:5,K:2} },
   ],
 
   // ---- Fare data by route ----
@@ -339,6 +374,27 @@ var DATA = {
       { al:'AR', basis:'MOW7AP',   ow:180,  cls:'M', pen:75,  dates:'01MAR-30NOV', ap:'7D',  min:'3D', max:'1M',  ref:'N' },
       { al:'PZ', basis:'YOW',      ow:290,  cls:'Y', pen:30,  dates:'01MAR-30NOV', ap:'',    min:'',   max:'6M',  ref:'R' },
       { al:'AV', basis:'YOW',      ow:310,  cls:'Y', pen:25,  dates:'01MAR-30NOV', ap:'',    min:'',   max:'12M', ref:'R' },
+    ],
+    'EZE-MIA': [
+      { al:'AR', basis:'YOW',      ow:680,  cls:'Y', pen:50,  dates:'01MAR-30NOV', ap:'',    min:'',   max:'12M', ref:'R' },
+      { al:'AR', basis:'MOW14AP',  ow:420,  cls:'M', pen:150, dates:'01MAR-30NOV', ap:'14D', min:'7D', max:'3M',  ref:'N' },
+      { al:'AA', basis:'YOW',      ow:670,  cls:'Y', pen:50,  dates:'01MAR-30NOV', ap:'',    min:'',   max:'12M', ref:'R' },
+      { al:'AA', basis:'MOW21AP',  ow:450,  cls:'M', pen:150, dates:'01MAR-30NOV', ap:'21D', min:'7D', max:'1M',  ref:'N' },
+    ],
+    'VVI-MIA': [
+      { al:'OB', basis:'YOW',      ow:750,  cls:'Y', pen:50,  dates:'01MAR-30NOV', ap:'',    min:'',   max:'12M', ref:'R' },
+      { al:'OB', basis:'MOW14AP',  ow:480,  cls:'M', pen:175, dates:'01MAR-30NOV', ap:'14D', min:'7D', max:'3M',  ref:'N' },
+      { al:'AA', basis:'YOW',      ow:740,  cls:'Y', pen:50,  dates:'01MAR-30NOV', ap:'',    min:'',   max:'12M', ref:'R' },
+    ],
+    'LIM-MIA': [
+      { al:'LA', basis:'YOW',      ow:580,  cls:'Y', pen:50,  dates:'01MAR-30NOV', ap:'',    min:'',   max:'12M', ref:'R' },
+      { al:'LA', basis:'MOW14AP',  ow:350,  cls:'M', pen:150, dates:'01MAR-30NOV', ap:'14D', min:'7D', max:'3M',  ref:'N' },
+      { al:'AV', basis:'YOW',      ow:570,  cls:'Y', pen:50,  dates:'01MAR-30NOV', ap:'',    min:'',   max:'12M', ref:'R' },
+    ],
+    'SCL-MIA': [
+      { al:'LA', basis:'YOW',      ow:650,  cls:'Y', pen:50,  dates:'01MAR-30NOV', ap:'',    min:'',   max:'12M', ref:'R' },
+      { al:'LA', basis:'MOW14AP',  ow:400,  cls:'M', pen:150, dates:'01MAR-30NOV', ap:'14D', min:'7D', max:'3M',  ref:'N' },
+      { al:'AA', basis:'YOW',      ow:640,  cls:'Y', pen:50,  dates:'01MAR-30NOV', ap:'',    min:'',   max:'12M', ref:'R' },
     ],
   },
 };
