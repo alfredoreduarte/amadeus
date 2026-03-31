@@ -1188,6 +1188,15 @@ var Training = (function () {
       return isPaid();
     },
 
+    getProgressData: function () {
+      return {
+        titles: SHORT_TITLES.slice(),
+        completed: completedExercises.slice(),
+        total: exercises.length,
+        freeLimit: FREE_LIMIT,
+      };
+    },
+
     restoreProgress: restoreProgress,
   };
 })();

@@ -34,6 +34,19 @@ document.addEventListener('DOMContentLoaded', function () {
   var loginErrorText = document.getElementById('login-error-text');
   var heroLogin      = document.getElementById('hero-login');
 
+  // Dashboard refs
+  var dashboard      = document.getElementById('dashboard');
+  var dashEmail      = document.getElementById('dash-email');
+  var dashLogout     = document.getElementById('dash-logout');
+  var dashExerciseList = document.getElementById('dash-board');
+  var dashProgressCount = document.getElementById('dash-progress-count');
+  var dashProgressLabel = document.getElementById('dash-progress-label');
+  var dashProgressFill  = document.getElementById('dash-progress-fill');
+  var dashContinue   = document.getElementById('dash-continue');
+  var dashContinueLabel = document.getElementById('dash-continue-label');
+  var dashOpen       = document.getElementById('dash-open');
+  var dashNextExercise = -1;
+
   // Auto-focus hero input only on non-touch devices (avoids keyboard popup on mobile)
   if (!('ontouchstart' in window)) heroInput.focus();
 
@@ -745,45 +758,199 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // ============================================================
+  //  DASHBOARD — for logged-in users
+  // ============================================================
+
+  // View transition helper (shared by all screen swaps)
+  function switchView(from, to, animate) {
+    if (animate) {
+      from.classList.add('fade-out');
+      setTimeout(function () {
+        from.classList.add('hidden');
+        from.classList.remove('fade-out');
+        to.classList.remove('hidden');
+        if (to === terminal) {
+          helpToggle.classList.remove('hidden');
+          terminal.offsetHeight;
+          terminal.classList.add('visible');
+          input.focus();
+        }
+      }, 500);
+    } else {
+      from.classList.add('hidden');
+      from.classList.remove('fade-out');
+      to.classList.remove('hidden');
+      if (to === terminal) {
+        helpToggle.classList.remove('hidden');
+        terminal.offsetHeight;
+        terminal.classList.add('visible');
+        input.focus();
+      }
+    }
+  }
+
+  function populateDashboard(user) {
+    // Ensure progress is restored before reading it
+    if (user.progress) Training.restoreProgress(user.progress);
+
+    var progress = Training.getProgressData();
+    var completed = progress.completed;
+    var paid = user.paid;
+
+    dashEmail.textContent = user.email;
+    dashProgressCount.textContent = completed.length;
+    dashProgressLabel.textContent = 'de ' + progress.total + ' ejercicios completados';
+    // Animate progress bar after a brief delay
+    setTimeout(function () {
+      dashProgressFill.style.width = ((completed.length / progress.total) * 100) + '%';
+    }, 200);
+
+    // Build exercise rows
+    var frag = document.createDocumentFragment();
+    for (var i = 0; i < progress.total; i++) {
+      var num = i + 1;
+      var done = completed.indexOf(num) !== -1;
+      var free = num <= progress.freeLimit;
+      var locked = !free && !paid;
+
+      var row = document.createElement('div');
+      row.className = 'dash-row' + (done ? ' done' : '') + (locked ? ' locked' : '');
+      row.setAttribute('data-ex', num);
+
+      var numEl = document.createElement('span');
+      numEl.className = 'dash-row-num';
+      numEl.textContent = num;
+
+      var titleEl = document.createElement('span');
+      titleEl.className = 'dash-row-title';
+      titleEl.textContent = progress.titles[i];
+
+      var tagEl = document.createElement('span');
+      tagEl.className = 'dash-row-tag';
+      if (done) {
+        tagEl.classList.add('dash-tag-done');
+        tagEl.textContent = 'COMPLETADO';
+      } else if (locked) {
+        tagEl.classList.add('dash-tag-locked');
+        tagEl.textContent = 'PRO';
+      } else if (free) {
+        tagEl.classList.add('dash-tag-free');
+        tagEl.textContent = 'GRATIS';
+      } else {
+        tagEl.classList.add('dash-tag-pro');
+        tagEl.textContent = 'PRO';
+      }
+
+      row.appendChild(numEl);
+      row.appendChild(titleEl);
+      row.appendChild(tagEl);
+      frag.appendChild(row);
+    }
+    dashExerciseList.innerHTML = '';
+    dashExerciseList.appendChild(frag);
+
+    // Find next uncompleted exercise for "Continue" button
+    dashNextExercise = -1;
+    for (var j = 0; j < progress.total; j++) {
+      var n = j + 1;
+      var isFree = n <= progress.freeLimit;
+      if (completed.indexOf(n) === -1 && (isFree || paid)) {
+        dashNextExercise = n;
+        break;
+      }
+    }
+
+    if (dashNextExercise > 0 && completed.length > 0) {
+      dashContinue.classList.remove('hidden');
+      dashContinueLabel.textContent = 'Continuar Ejercicio ' + dashNextExercise;
+    } else {
+      dashContinue.classList.add('hidden');
+    }
+  }
+
+  function dashTransitionToTerminal(firstCmd, firstResult) {
+    dashboard.classList.add('fade-out');
+    setTimeout(function () {
+      dashboard.classList.add('hidden');
+      dashboard.classList.remove('fade-out');
+      terminal.classList.remove('hidden');
+      helpToggle.classList.remove('hidden');
+
+      if (firstCmd) {
+        print('> ' + firstCmd, 'command');
+        if (firstResult) print(firstResult, 'training');
+      } else {
+        print('', '');
+        print('Sesion iniciada. Bienvenido/a de vuelta!', 'success');
+        print('Escribe TRAINING para ver los ejercicios.', 'system');
+      }
+
+      terminal.offsetHeight;
+      terminal.classList.add('visible');
+      input.focus();
+    }, 500);
+  }
+
+  function dashTransitionToExercise(exNum) {
+    var cmd = 'TRAINING ' + exNum;
+    var result = Training.handleMeta(cmd);
+    if (result === '__PAYWALL__') {
+      showPaywall();
+      return;
+    }
+    dashTransitionToTerminal(cmd, result);
+  }
+
+  // Exercise row click handler (registered once, uses event delegation)
+  dashExerciseList.addEventListener('click', function (e) {
+    var row = e.target.closest('.dash-row');
+    if (!row || row.classList.contains('locked')) return;
+    var exNum = parseInt(row.getAttribute('data-ex'), 10);
+    dashTransitionToExercise(exNum);
+  });
+
+  // "Continuar" button
+  dashContinue.addEventListener('click', function () {
+    if (dashNextExercise > 0) dashTransitionToExercise(dashNextExercise);
+  });
+
+  // "Abrir Consola" button
+  dashOpen.addEventListener('click', function () {
+    dashTransitionToTerminal(null, null);
+  });
+
+  // Dashboard logout
+  dashLogout.addEventListener('click', function () {
+    Auth.logout(function () {
+      switchView(dashboard, hero, true);
+      if (!('ontouchstart' in window)) heroInput.focus();
+    });
+  });
+
+  // ============================================================
   //  POST-PAYMENT / POST-LOGIN HOOKS
   // ============================================================
 
   Auth._onPaymentConfirmed = function () {
-    // Payment confirmed via polling — show terminal with success message
-    if (!terminal.classList.contains('visible')) {
-      // Still on hero — transition to terminal
-      hero.classList.add('fade-out');
-      setTimeout(function () {
-        hero.classList.add('hidden');
-        terminal.classList.remove('hidden');
-        helpToggle.classList.remove('hidden');
-        print('', '');
-        print('Pago confirmado! Todos los ejercicios estan desbloqueados.', 'success');
-        print('Escribe TRAINING para ver los ejercicios.', 'system');
-        terminal.offsetHeight;
-        terminal.classList.add('visible');
-        input.focus();
-      }, 500);
-    } else {
+    var u = Auth.user();
+    if (terminal.classList.contains('visible') && !_postPayment) {
+      // Already using the terminal — just print confirmation
       print('', '');
       print('Pago confirmado! Todos los ejercicios estan desbloqueados.', 'success');
       print('Escribe TRAINING para ver los ejercicios.', 'system');
+      return;
     }
+    // All other cases: show dashboard
+    populateDashboard(u);
+    var hideTarget = _postPayment ? terminal : hero;
+    switchView(hideTarget, dashboard, true);
   };
 
   Auth._onPaymentTimeout = function () {
     if (!terminal.classList.contains('visible')) {
-      hero.classList.add('fade-out');
-      setTimeout(function () {
-        hero.classList.add('hidden');
-        terminal.classList.remove('hidden');
-        helpToggle.classList.remove('hidden');
-        print('', '');
-        print('Tu pago fue recibido. Si los ejercicios no se desbloquean, recarga la pagina en unos segundos.', 'system');
-        terminal.offsetHeight;
-        terminal.classList.add('visible');
-        input.focus();
-      }, 500);
+      switchView(hero, terminal, true);
+      print('', '');
+      print('Tu pago fue recibido. Si los ejercicios no se desbloquean, recarga la pagina en unos segundos.', 'system');
     } else {
       print('', '');
       print('Tu pago fue recibido. Si los ejercicios no se desbloquean, recarga la pagina en unos segundos.', 'system');
@@ -792,38 +959,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // If returning from payment, show a loading message
   if (_postPayment) {
-    hero.classList.add('fade-out');
+    switchView(hero, terminal, true);
+    // Print after transition completes
     setTimeout(function () {
-      hero.classList.add('hidden');
-      terminal.classList.remove('hidden');
-      helpToggle.classList.remove('hidden');
       print('Verificando tu pago...', 'system');
-      terminal.offsetHeight;
-      terminal.classList.add('visible');
-    }, 500);
+    }, 550);
   }
 
-  // If returning from magic link login
-  if (_postLogin) {
+  // Show dashboard for logged-in users (post-login or existing session)
+  if (!_postPayment) {
     Auth.onReady(function (user) {
-      if (user) {
-        if (!terminal.classList.contains('visible')) {
-          hero.classList.add('fade-out');
-          setTimeout(function () {
-            hero.classList.add('hidden');
-            terminal.classList.remove('hidden');
-            helpToggle.classList.remove('hidden');
-            print('', '');
-            print('Sesion iniciada. Bienvenido/a de vuelta!', 'success');
-            if (user.paid) {
-              print('Todos los ejercicios estan desbloqueados.', 'system');
-            }
-            print('Escribe TRAINING para ver los ejercicios.', 'system');
-            terminal.offsetHeight;
-            terminal.classList.add('visible');
-            input.focus();
-          }, 500);
-        }
+      if (!user) return;
+      populateDashboard(user);
+      if (_postLogin) {
+        switchView(hero, dashboard, true);
+      } else {
+        hero.classList.add('hidden');
+        dashboard.classList.remove('hidden');
       }
     });
   }
