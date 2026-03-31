@@ -1,0 +1,41 @@
+name: Deploy to production
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+jobs:
+  deploy:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy via rsync
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -avz --delete --exclude='.git' --exclude='reference' --exclude='plans' --exclude='api/.env' --exclude='api/node_modules' --exclude='api/data'
+          path: ./
+          remote_path: /root/websites/amadeus/
+          remote_host: 159.223.121.11
+          remote_user: root
+          remote_key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+      - name: Rebuild containers
+        uses: appleboy/ssh-action@v1
+        with:
+          host: 159.223.121.11
+          username: root
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: cd /root/websites/amadeus && docker compose up -d --build
+
+      - name: Verify deployment
+        run: |
+          sleep 5
+          STATUS=$(curl -s -o /dev/null -w '%{http_code}' https://agentemaster.com)
+          if [ "$STATUS" != "200" ]; then
+            echo "Deployment verification failed: HTTP $STATUS"
+            exit 1
+          fi
+          echo "Deployment verified: HTTP $STATUS"
