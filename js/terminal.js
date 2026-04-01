@@ -593,13 +593,17 @@ document.addEventListener('DOMContentLoaded', function () {
       helpToggle.classList.remove('hidden');
 
       print('> ' + firstCmd, 'command');
+
+      print('', '');
+      print('Bien! Este sería el resultado arrojado por Amadeus:', 'system');
+
       if (firstResult && typeof firstResult === 'object' && firstResult.clear) {
         // skip
       } else if (firstResult) {
         print(firstResult, 'response');
       }
       print('', '');
-      print('Escribe TRAINING para comenzar el curso interactivo.', 'system');
+      print('Para aprender a leerlo escribe TRAINING y comenzaremos el curso interactivo.', 'system');
 
       terminal.offsetHeight;
       terminal.classList.add('visible');
