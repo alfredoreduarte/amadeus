@@ -621,6 +621,14 @@ document.addEventListener('DOMContentLoaded', function () {
     history.push(raw);
     historyIndex = history.length;
 
+    // Push previous output above the fold so each command feels fresh
+    if (cmd !== 'MD' && cmd !== 'MU' && cmd !== 'CLEAR' && output.children.length > 0) {
+      var spacer = document.createElement('div');
+      spacer.style.height = output.clientHeight + 'px';
+      spacer.style.flexShrink = '0';
+      output.appendChild(spacer);
+    }
+
     print('> ' + cmd, 'command');
 
     // MD with pending training buffer — show next page
