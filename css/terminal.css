@@ -860,6 +860,12 @@ body {
 
 #hero { position: relative; }
 
+.hero-cta {
+  color: var(--c-action);
+  opacity: 0.7;
+  margin-top: 4px;
+}
+
 .site-disclaimer {
   position: absolute;
   bottom: 16px;
@@ -867,7 +873,7 @@ body {
   right: 24px;
   text-align: center;
   font-family: var(--font-display);
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1.5;
   color: #8585a0;
   max-width: 480px;
