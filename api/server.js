@@ -7,7 +7,7 @@ var { stmts, findOrCreateUser, generateToken } = require('./db');
 
 var app = express();
 var PORT = process.env.PORT || 3000;
-var SITE_URL = process.env.SITE_URL || 'https://amadeus.alfredo.re';
+var SITE_URL = process.env.SITE_URL || 'https://www.agentemaster.com';
 var COOKIE_MAX_AGE = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 // Crash on startup if critical secrets are missing

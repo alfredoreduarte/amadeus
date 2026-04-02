@@ -33,7 +33,7 @@ jobs:
       - name: Verify deployment
         run: |
           sleep 5
-          STATUS=$(curl -s -o /dev/null -w '%{http_code}' https://agentemaster.com)
+          STATUS=$(curl -s -o /dev/null -w '%{http_code}' https://www.agentemaster.com)
           if [ "$STATUS" != "200" ]; then
             echo "Deployment verification failed: HTTP $STATUS"
             exit 1
