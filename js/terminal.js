@@ -104,6 +104,7 @@ document.addEventListener('DOMContentLoaded', function () {
     destSeg.querySelector('.seg-label').textContent    = route.destCity;
     heroInput.placeholder = EXAMPLE;
     syncWidths();
+    Training.setGeoRoute(route);
   }
 
   // Check sessionStorage cache first, then fetch from API
