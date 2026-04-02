@@ -975,7 +975,7 @@ var Training = (function () {
     if (!paid) {
       lines.push('');
       lines.push(LINE);
-      lines.push('Ejercicios [PRO]: $9 USD.');
+      lines.push('Ejercicios [PRO]: $' + DATA.PRICE + ' USD.');
       lines.push(ACT + 'Escriba COMPRAR para desbloquear.');
     }
 

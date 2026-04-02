@@ -4,6 +4,9 @@
 
 var DATA = {
 
+  // ---- Price (single source of truth for frontend) ----
+  PRICE: 19,
+
   // ---- Airlines ----
   airlines: {
     'AA': { name: 'AMERICAN AIRLINES',        country: 'US' },

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contacto - AgenteMaster</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --c-bg:      #0a0e27;
+      --c-action:  #4fc3f7;
+      --c-date:    #69f0ae;
+      --c-text:    #e0e0e0;
+      --c-muted:   #6b6b85;
+      --c-dim:     #2a2f55;
+      --c-surface: #0f1335;
+      --c-border:  #1a2050;
+      --c-error:   #ff6b6b;
+      --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--c-bg);
+      color: var(--c-text);
+      font-family: var(--font-display);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 24px;
+    }
+
+    .contact-container {
+      max-width: 480px;
+      width: 100%;
+    }
+
+    .contact-back {
+      display: inline-block;
+      font-size: 14px;
+      color: var(--c-muted);
+      text-decoration: none;
+      margin-bottom: 32px;
+      transition: color 0.2s;
+    }
+
+    .contact-back:hover { color: var(--c-action); }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #f0f0f0;
+      margin-bottom: 8px;
+    }
+
+    .contact-sub {
+      font-size: 15px;
+      color: var(--c-muted);
+      margin-bottom: 32px;
+      line-height: 1.5;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--c-muted);
+      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 12px 16px;
+      font-family: var(--font-display);
+      font-size: 15px;
+      background: var(--c-surface);
+      border: 1px solid var(--c-dim);
+      border-radius: 8px;
+      color: var(--c-text);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, textarea:focus {
+      border-color: var(--c-action);
+    }
+
+    input::placeholder, textarea::placeholder {
+      color: #3d3d55;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    .contact-btn {
+      display: inline-block;
+      background: var(--c-date);
+      color: var(--c-bg);
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 600;
+      padding: 14px 40px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      width: 100%;
+    }
+
+    .contact-btn:hover {
+      background: #5ae09e;
+      transform: translateY(-1px);
+    }
+
+    .contact-btn:active { transform: translateY(0); }
+
+    .contact-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .contact-error {
+      color: var(--c-error);
+      font-size: 13px;
+      margin-top: 8px;
+      display: none;
+    }
+
+    .contact-success {
+      text-align: center;
+      padding: 40px 0;
+    }
+
+    .contact-success h2 {
+      font-size: 22px;
+      color: var(--c-date);
+      margin-bottom: 12px;
+    }
+
+    .contact-success p {
+      font-size: 15px;
+      color: var(--c-muted);
+      line-height: 1.5;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="contact-container">
+    <a href="/" class="contact-back">&larr; Volver a AgenteMaster</a>
+
+    <div id="contact-form-section">
+      <h1>Contacto</h1>
+      <p class="contact-sub">Tienes preguntas o necesitas ayuda? Envianos un mensaje y te responderemos pronto.</p>
+
+      <form id="contact-form">
+        <div class="form-group">
+          <label for="contact-name">Nombre</label>
+          <input type="text" id="contact-name" placeholder="Tu nombre" required>
+        </div>
+        <div class="form-group">
+          <label for="contact-email">Email</label>
+          <input type="email" id="contact-email" placeholder="tu@email.com" required>
+        </div>
+        <div class="form-group">
+          <label for="contact-message">Mensaje</label>
+          <textarea id="contact-message" placeholder="En que podemos ayudarte?" required></textarea>
+        </div>
+        <button type="submit" class="contact-btn" id="contact-submit">Enviar Mensaje</button>
+        <p class="contact-error" id="contact-error"></p>
+      </form>
+    </div>
+
+    <div id="contact-success" class="contact-success hidden">
+      <h2>Mensaje enviado</h2>
+      <p>Recibimos tu mensaje. Te responderemos lo antes posible al email que nos indicaste.</p>
+      <br>
+      <a href="/" class="contact-back">Volver a AgenteMaster</a>
+    </div>
+  </div>
+
+  <script>
+    var form = document.getElementById('contact-form');
+    var formSection = document.getElementById('contact-form-section');
+    var successSection = document.getElementById('contact-success');
+    var errorEl = document.getElementById('contact-error');
+    var submitBtn = document.getElementById('contact-submit');
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      errorEl.style.display = 'none';
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Enviando...';
+
+      var name = document.getElementById('contact-name').value.trim();
+      var email = document.getElementById('contact-email').value.trim();
+      var message = document.getElementById('contact-message').value.trim();
+
+      fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name, email: email, message: message })
+      })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        if (!result.ok) {
+          errorEl.textContent = result.data.error || 'Error al enviar. Intenta de nuevo.';
+          errorEl.style.display = 'block';
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Enviar Mensaje';
+          return;
+        }
+        formSection.classList.add('hidden');
+        successSection.classList.remove('hidden');
+      })
+      .catch(function () {
+        errorEl.textContent = 'Error de conexion. Intenta de nuevo.';
+        errorEl.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Enviar Mensaje';
+      });
+    });
+  </script>
+</body>
+</html>
