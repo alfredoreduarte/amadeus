@@ -13,6 +13,7 @@
   --c-surface: #0f1335;
   --c-border:  #1a2050;
   --c-error:   #ff6b6b;
+  --c-heading: #f0f0f0;
 
   --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono:    'JetBrains Mono', 'Courier New', Consolas, monospace;
@@ -1330,6 +1331,7 @@ body {
   max-width: 960px;
   margin: 0 auto;
   padding: 0 24px 0;
+  font-family: var(--font-display);
 }
 
 .lp-section {
@@ -1342,17 +1344,15 @@ body {
 }
 
 .lp-heading {
-  font-family: var(--font-display);
   font-size: clamp(26px, 4vw, 36px);
   font-weight: 700;
-  color: #f0f0f0;
+  color: var(--c-heading);
   text-align: center;
   margin-bottom: 12px;
   letter-spacing: -0.5px;
 }
 
 .lp-subheading {
-  font-family: var(--font-display);
   font-size: clamp(14px, 2vw, 17px);
   font-weight: 300;
   color: var(--c-muted);
@@ -1386,7 +1386,6 @@ body {
 }
 
 .lp-card h3 {
-  font-family: var(--font-display);
   font-size: 15px;
   font-weight: 600;
   color: var(--c-text);
@@ -1395,7 +1394,6 @@ body {
 }
 
 .lp-card p {
-  font-family: var(--font-display);
   font-size: 13px;
   color: var(--c-muted);
   line-height: 1.5;
@@ -1405,7 +1403,6 @@ body {
   position: absolute;
   top: 24px;
   right: 24px;
-  font-family: var(--font-display);
   font-size: 13px;
   font-weight: 700;
   color: var(--c-dim);
@@ -1420,7 +1417,6 @@ body {
 
 .lp-card-tag {
   display: inline-block;
-  font-family: var(--font-display);
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 1px;
@@ -1445,14 +1441,13 @@ body {
 .lp-card-audience h3 {
   font-size: 16px;
   font-weight: 600;
-  color: #f0f0f0;
+  color: var(--c-heading);
   padding-right: 0;
   margin-bottom: 12px;
   line-height: 1.4;
 }
 
 .lp-note {
-  font-family: var(--font-display);
   font-size: 13px;
   color: var(--c-muted);
   text-align: center;
@@ -1480,7 +1475,6 @@ body {
 }
 
 .lp-glossary-callout strong {
-  font-family: var(--font-display);
   font-size: 15px;
   color: var(--c-text);
   display: block;
@@ -1488,7 +1482,6 @@ body {
 }
 
 .lp-glossary-callout p {
-  font-family: var(--font-display);
   font-size: 13px;
   color: var(--c-muted);
   line-height: 1.5;
@@ -1517,7 +1510,6 @@ body {
   background: rgba(105, 240, 174, 0.1);
   border: 2px solid var(--c-date);
   color: var(--c-date);
-  font-family: var(--font-display);
   font-size: 20px;
   font-weight: 700;
   display: flex;
@@ -1527,15 +1519,13 @@ body {
 }
 
 .lp-step h3 {
-  font-family: var(--font-display);
   font-size: 16px;
   font-weight: 600;
-  color: #f0f0f0;
+  color: var(--c-heading);
   margin-bottom: 8px;
 }
 
 .lp-step p {
-  font-family: var(--font-display);
   font-size: 13px;
   color: var(--c-muted);
   line-height: 1.5;
@@ -1565,7 +1555,6 @@ body {
 }
 
 .lp-pricing-price {
-  font-family: var(--font-display);
   font-size: 56px;
   font-weight: 700;
   color: var(--c-date);
@@ -1579,7 +1568,6 @@ body {
 }
 
 .lp-pricing-type {
-  font-family: var(--font-display);
   font-size: 14px;
   color: var(--c-muted);
   margin-bottom: 32px;
@@ -1592,7 +1580,6 @@ body {
 }
 
 .lp-pricing-features li {
-  font-family: var(--font-display);
   font-size: 15px;
   color: var(--c-text);
   padding: 10px 0;
@@ -1607,7 +1594,6 @@ body {
 }
 
 .lp-pricing-guarantee {
-  font-family: var(--font-display);
   font-size: 13px;
   color: var(--c-muted);
   background: rgba(105, 240, 174, 0.06);
@@ -1619,7 +1605,6 @@ body {
 }
 
 .lp-pricing-compare {
-  font-family: var(--font-display);
   font-size: 13px;
   color: var(--c-muted);
   margin-top: 16px;
@@ -1632,7 +1617,6 @@ body {
   display: inline-block;
   background: var(--c-date);
   color: var(--c-bg);
-  font-family: var(--font-display);
   font-size: 16px;
   font-weight: 600;
   padding: 14px 40px;
@@ -1669,7 +1653,6 @@ body {
 }
 
 .lp-faq summary {
-  font-family: var(--font-display);
   font-size: 15px;
   font-weight: 600;
   color: var(--c-text);
@@ -1699,7 +1682,6 @@ body {
 }
 
 .lp-faq p {
-  font-family: var(--font-display);
   font-size: 14px;
   color: var(--c-muted);
   line-height: 1.6;
@@ -1733,7 +1715,6 @@ body {
 }
 
 .lp-footer-links a {
-  font-family: var(--font-display);
   font-size: 13px;
   color: var(--c-muted);
   text-decoration: none;
@@ -1745,7 +1726,6 @@ body {
 }
 
 .lp-footer-disclaimer {
-  font-family: var(--font-display);
   font-size: 12px;
   color: #8585a0;
   line-height: 1.5;
@@ -1753,7 +1733,6 @@ body {
 }
 
 .lp-footer-copy {
-  font-family: var(--font-display);
   font-size: 12px;
   color: var(--c-dim);
 }

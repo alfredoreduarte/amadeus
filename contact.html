@@ -7,31 +7,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/legal.css">
   <style>
-    :root {
-      --c-bg:      #0a0e27;
-      --c-action:  #4fc3f7;
-      --c-date:    #69f0ae;
-      --c-text:    #e0e0e0;
-      --c-muted:   #6b6b85;
-      --c-dim:     #2a2f55;
-      --c-surface: #0f1335;
-      --c-border:  #1a2050;
-      --c-error:   #ff6b6b;
-      --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-    }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
     body {
-      background: var(--c-bg);
-      color: var(--c-text);
-      font-family: var(--font-display);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 48px 24px;
+      line-height: 1.5;
     }
 
     .contact-container {
@@ -50,13 +33,6 @@
 
     .contact-back:hover { color: var(--c-action); }
 
-    h1 {
-      font-size: 28px;
-      font-weight: 700;
-      color: #f0f0f0;
-      margin-bottom: 8px;
-    }
-
     .contact-sub {
       font-size: 15px;
       color: var(--c-muted);
@@ -64,9 +40,7 @@
       line-height: 1.5;
     }
 
-    .form-group {
-      margin-bottom: 20px;
-    }
+    .form-group { margin-bottom: 20px; }
 
     label {
       display: block;
@@ -90,13 +64,8 @@
       transition: border-color 0.2s;
     }
 
-    input:focus, textarea:focus {
-      border-color: var(--c-action);
-    }
-
-    input::placeholder, textarea::placeholder {
-      color: #3d3d55;
-    }
+    input:focus, textarea:focus { border-color: var(--c-action); }
+    input::placeholder, textarea::placeholder { color: #3d3d55; }
 
     textarea {
       min-height: 120px;
@@ -119,42 +88,15 @@
       width: 100%;
     }
 
-    .contact-btn:hover {
-      background: #5ae09e;
-      transform: translateY(-1px);
-    }
-
+    .contact-btn:hover { background: #5ae09e; transform: translateY(-1px); }
     .contact-btn:active { transform: translateY(0); }
+    .contact-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-    .contact-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none;
-    }
+    .contact-error { color: var(--c-error); font-size: 13px; margin-top: 8px; display: none; }
 
-    .contact-error {
-      color: var(--c-error);
-      font-size: 13px;
-      margin-top: 8px;
-      display: none;
-    }
-
-    .contact-success {
-      text-align: center;
-      padding: 40px 0;
-    }
-
-    .contact-success h2 {
-      font-size: 22px;
-      color: var(--c-date);
-      margin-bottom: 12px;
-    }
-
-    .contact-success p {
-      font-size: 15px;
-      color: var(--c-muted);
-      line-height: 1.5;
-    }
+    .contact-success { text-align: center; padding: 40px 0; }
+    .contact-success h2 { font-size: 22px; color: var(--c-date); margin-bottom: 12px; }
+    .contact-success p { font-size: 15px; color: var(--c-muted); line-height: 1.5; }
 
     .hidden { display: none !important; }
   </style>
