@@ -26,6 +26,7 @@ var rateLimits = {};
 function checkRateLimit(key, max, windowMs) {
   var now = Date.now();
   if (!rateLimits[key] || rateLimits[key].reset < now) {
+    if (Object.keys(rateLimits).length > 50000) return false;
     rateLimits[key] = { count: 1, reset: now + windowMs };
     return true;
   }
@@ -334,6 +335,9 @@ app.post('/api/contact', function (req, res) {
   if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
     return res.status(400).json({ error: 'Email invalido' });
   }
+  if (name.length > 200) {
+    return res.status(400).json({ error: 'El nombre es demasiado largo' });
+  }
   if (message.length > 5000) {
     return res.status(400).json({ error: 'El mensaje es demasiado largo' });
   }
@@ -342,46 +346,52 @@ app.post('/api/contact', function (req, res) {
   if (!checkRateLimit('contact:' + ip, 3, 3600000)) {
     return res.status(429).json({ error: 'Demasiados mensajes. Intenta en una hora.' });
   }
+  if (!checkRateLimit('contact-email:' + email, 3, 3600000)) {
+    return res.status(429).json({ error: 'Demasiados mensajes. Intenta en una hora.' });
+  }
 
   var adminEmail = process.env.CONTACT_EMAIL || 'contacto@agentemaster.com';
+  var esc = function (s) { return s.replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
+  var safeName = esc(name);
+  var safeMessage = esc(message);
 
-  // Send both emails in parallel
-  Promise.all([
-    // Visitor confirmation
-    resend.emails.send({
-      from: 'AgenteMaster <noreply@agentemaster.com>',
-      to: email,
-      subject: 'Recibimos tu mensaje - AgenteMaster',
-      html: [
-        '<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:20px;">',
-        '<h2 style="color:#4fc3f7;">AgenteMaster</h2>',
-        '<p>Hola ' + name.split(' ')[0] + ',</p>',
-        '<p>Recibimos tu mensaje y te responderemos lo antes posible.</p>',
-        '<p style="color:#888;font-size:13px;margin-top:20px;">Si no enviaste este mensaje, puedes ignorar este email.</p>',
-        '</div>',
-      ].join(''),
-    }),
-    // Admin notification
-    resend.emails.send({
-      from: 'AgenteMaster Contacto <noreply@agentemaster.com>',
-      to: adminEmail,
-      subject: 'Nuevo mensaje de contacto: ' + name,
-      html: [
-        '<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;">',
-        '<h2 style="color:#4fc3f7;">Nuevo mensaje de contacto</h2>',
-        '<p><strong>Nombre:</strong> ' + name + '</p>',
-        '<p><strong>Email:</strong> ' + email + '</p>',
-        '<p><strong>Mensaje:</strong></p>',
-        '<div style="background:#f5f5f5;padding:16px;border-radius:8px;white-space:pre-wrap;">' + message.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>',
-        '</div>',
-      ].join(''),
-      replyTo: email,
-    }),
-  ]).then(function () {
+  // Send visitor confirmation; admin notification is fire-and-forget
+  resend.emails.send({
+    from: 'AgenteMaster <noreply@agentemaster.com>',
+    to: email,
+    subject: 'Recibimos tu mensaje - AgenteMaster',
+    html: [
+      '<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:20px;">',
+      '<h2 style="color:#4fc3f7;">AgenteMaster</h2>',
+      '<p>Hola ' + safeName.split(' ')[0] + ',</p>',
+      '<p>Recibimos tu mensaje y te responderemos lo antes posible.</p>',
+      '<p style="color:#888;font-size:13px;margin-top:20px;">Si no enviaste este mensaje, puedes ignorar este email.</p>',
+      '</div>',
+    ].join(''),
+  }).then(function () {
     res.json({ sent: true });
   }).catch(function (err) {
     console.error('Contact email error:', err.message);
     res.status(500).json({ error: 'Error al enviar. Intenta de nuevo.' });
+  });
+
+  // Admin notification — fire-and-forget (don't block the user response)
+  resend.emails.send({
+    from: 'AgenteMaster Contacto <noreply@agentemaster.com>',
+    to: adminEmail,
+    subject: 'Nuevo mensaje de contacto: ' + safeName,
+    html: [
+      '<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;">',
+      '<h2 style="color:#4fc3f7;">Nuevo mensaje de contacto</h2>',
+      '<p><strong>Nombre:</strong> ' + safeName + '</p>',
+      '<p><strong>Email:</strong> ' + email + '</p>',
+      '<p><strong>Mensaje:</strong></p>',
+      '<div style="background:#f5f5f5;padding:16px;border-radius:8px;white-space:pre-wrap;">' + safeMessage + '</div>',
+      '</div>',
+    ].join(''),
+    replyTo: email,
+  }).catch(function (err) {
+    console.error('Admin notification error:', err.message);
   });
 });
 

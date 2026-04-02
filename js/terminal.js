@@ -49,6 +49,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
   var landingContent = document.getElementById('landing-content');
 
+  function lockForApp() {
+    if (landingContent) landingContent.classList.add('hidden');
+    document.body.classList.add('scroll-locked');
+    window.scrollTo(0, 0);
+  }
+
+  function unlockForLanding() {
+    if (landingContent) landingContent.classList.remove('hidden');
+    document.body.classList.remove('scroll-locked');
+  }
+
   // Populate dynamic price from DATA.PRICE
   var priceDisplay = document.getElementById('paywall-price-display');
   if (priceDisplay) priceDisplay.innerHTML = '$' + DATA.PRICE + ' <span>USD</span>';
@@ -623,9 +634,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function transitionToTerminal(firstCmd, firstResult) {
     hero.classList.add('fade-out');
-    if (landingContent) landingContent.classList.add('hidden');
-    document.body.classList.add('scroll-locked');
-    window.scrollTo(0, 0);
+    lockForApp();
 
     setTimeout(function () {
       hero.classList.add('hidden');
@@ -816,15 +825,12 @@ document.addEventListener('DOMContentLoaded', function () {
   // View transition helper (shared by all screen swaps)
   function switchView(from, to, animate) {
     // Hide landing content when leaving hero for terminal/dashboard
-    if (from === hero && to !== hero && landingContent) {
-      landingContent.classList.add('hidden');
-      document.body.classList.add('scroll-locked');
-      window.scrollTo(0, 0);
+    if (from === hero && to !== hero) {
+      lockForApp();
     }
     // Show landing content when returning to hero
-    if (to === hero && landingContent) {
-      landingContent.classList.remove('hidden');
-      document.body.classList.remove('scroll-locked');
+    if (to === hero) {
+      unlockForLanding();
     }
     if (to === dashboard || to === terminal) {
       document.body.classList.add('scroll-locked');
@@ -1043,8 +1049,7 @@ document.addEventListener('DOMContentLoaded', function () {
         switchView(hero, dashboard, true);
       } else {
         hero.classList.add('hidden');
-        if (landingContent) landingContent.classList.add('hidden');
-        document.body.classList.add('scroll-locked');
+        lockForApp();
         dashboard.classList.remove('hidden');
       }
     });

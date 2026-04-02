@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Amadeus GDS training course website — a commercial product that teaches travel agents the Amadeus reservation system through interactive exercises in a browser-based terminal simulator. Features a landing page with a hero "AHA moment" input, 8 guided exercises (2 free, 6 behind a $9 Stripe paywall), and a full Amadeus command simulator. Targets the Latin American travel agent market (Spanish language, Paraguay/Bolivia/Argentina routes).
+Amadeus GDS training course website — a commercial product that teaches travel agents the Amadeus reservation system through interactive exercises in a browser-based terminal simulator. Features a landing page with a hero "AHA moment" input, 8 guided exercises (2 free, 6 behind a $19 Stripe paywall), and a full Amadeus command simulator. Targets the Latin American travel agent market (Spanish language, Paraguay/Bolivia/Argentina routes).
 
 ## Running
 
@@ -56,12 +56,12 @@ Database: SQLite (`better-sqlite3`) with 3 tables: `users`, `magic_links`, `prog
 1. Landing page: hero with large centered input box, user types first Amadeus command (AHA moment)
 2. Hero fades out, terminal fades in with the command result + prompt to type `TRAINING`
 3. Exercises 1-2 play freely; attempting exercise 3+ shows paywall modal
-4. User enters email in paywall modal → Stripe Checkout Session → pays $9 → redirects back → webhook confirms → session cookie set → exercises unlocked (zero email interruption)
+4. User enters email in paywall modal → Stripe Checkout Session → pays $19 → redirects back → webhook confirms → session cookie set → exercises unlocked (zero email interruption)
 5. Returning users: session cookie lasts 30 days. If expired, magic link flow via LOGIN command or entering email at paywall (auto-detects already-paid users)
 
 ## Stripe Integration
 
-Uses Stripe Checkout Sessions with server-side webhook verification. The API creates a Checkout Session, Stripe handles the payment page, and a webhook (`checkout.session.completed`) marks the user as paid in the database. Price: $9 USD one-time payment.
+Uses Stripe Checkout Sessions with server-side webhook verification. The API creates a Checkout Session, Stripe handles the payment page, and a webhook (`checkout.session.completed`) marks the user as paid in the database. Price: $19 USD one-time payment (configurable via `PRICE_CENTS` env var and `DATA.PRICE` in `js/data.js` — these must be kept in sync).
 
 **Required env vars:** `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` (in `api/.env`).
 

@@ -4,7 +4,7 @@
 
 var DATA = {
 
-  // ---- Price (single source of truth for frontend) ----
+  // ---- Price (must match PRICE_CENTS in api/.env: 1900 = $19) ----
   PRICE: 19,
 
   // ---- Airlines ----
