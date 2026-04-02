@@ -31,11 +31,13 @@ echo "==> Rebuilding container..."
 ssh "$SERVER" "cd $REMOTE_DIR && docker compose up -d --build"
 
 echo "==> Verifying..."
-STATUS=$(curl -s -o /dev/null -w '%{http_code}' https://amadeus.alfredo.re)
-echo "    HTTP $STATUS"
+STATUS=$(curl -s -o /dev/null -w '%{http_code}' https://www.agentemaster.com)
+REDIRECT=$(curl -s -o /dev/null -w '%{http_code}' https://agentemaster.com)
+echo "    www: HTTP $STATUS (expect 200)"
+echo "    non-www: HTTP $REDIRECT (expect 301)"
 
-if [ "$STATUS" = "200" ]; then
+if [ "$STATUS" = "200" ] && [ "$REDIRECT" = "301" ]; then
   echo "==> Deploy complete! Cache busted with v=$STAMP"
 else
-  echo "==> WARNING: Got HTTP $STATUS"
+  echo "==> WARNING: www=$STATUS, redirect=$REDIRECT"
 fi

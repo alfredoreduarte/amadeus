@@ -65,7 +65,7 @@ Uses Stripe Checkout Sessions with server-side webhook verification. The API cre
 
 **Required env vars:** `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` (in `api/.env`).
 
-**Webhook URL:** `https://amadeus.alfredo.re/api/stripe/webhook` (configure in Stripe Dashboard → Developers → Webhooks).
+**Webhook URL:** `https://www.agentemaster.com/api/stripe/webhook` (configure in Stripe Dashboard → Developers → Webhooks).
 
 ## Styling
 
@@ -73,7 +73,7 @@ Uses Stripe Checkout Sessions with server-side webhook verification. The API cre
 
 ## Deployment
 
-Production is at **https://amadeus.alfredo.re**, hosted on a DigitalOcean droplet (`root@159.223.121.11`). Two Docker containers: `web` (nginx:alpine, static files, port 8082) and `api` (node:20-alpine, Express + SQLite, port 3001). Behind host nginx reverse proxy with SSL via Let's Encrypt.
+Production is at **https://www.agentemaster.com** (non-www redirects to www), hosted on a DigitalOcean droplet (`root@159.223.121.11`). Two Docker containers: `web` (nginx:alpine, static files, port 8082) and `api` (node:20-alpine, Express + SQLite, port 3001). Behind host nginx reverse proxy with SSL via Let's Encrypt. Legacy domain `amadeus.alfredo.re` also redirects to `www.agentemaster.com`.
 
 ### Server layout
 
@@ -81,7 +81,7 @@ Production is at **https://amadeus.alfredo.re**, hosted on a DigitalOcean drople
 - **Docker containers:** `amadeus-web-1` (port 8082 → 80), `amadeus-api-1` (port 3001 → 3000)
 - **SQLite data:** Docker named volume `amadeus_api_data` → `/app/data/amadeus.db`
 - **API env:** `/root/websites/amadeus/api/.env` (secrets, NOT in git)
-- **Nginx config:** `/etc/nginx/sites-enabled/amadeus.alfredo.re.conf` (reverse proxy to 8082 + `/api/` to 3001)
+- **Nginx configs:** `/etc/nginx/sites-enabled/agentemaster.com.conf` (primary) and `/etc/nginx/sites-enabled/amadeus.alfredo.re.conf` (legacy)
 - **SSL cert:** managed by Certbot, auto-renews
 
 ### Deploy current branch
@@ -97,29 +97,23 @@ The `--delete` flag removes files on the server that no longer exist locally. Th
 
 **First-time deploy:** copy `api/.env.example` to server as `api/.env` and fill in real keys before running docker compose.
 
-### Host nginx config for API proxy
+### Host nginx config
 
-Add to `/etc/nginx/sites-enabled/amadeus.alfredo.re.conf`:
+Two host nginx configs exist on the server:
 
-```nginx
-location /api/ {
-    proxy_pass http://127.0.0.1:3001/api/;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-}
-```
+- **`/etc/nginx/sites-enabled/agentemaster.com.conf`** — primary domain, serves both `agentemaster.com` and `www.agentemaster.com` with SSL. The non-www → www redirect is handled by the Docker nginx container (see `nginx.conf`).
+- **`/etc/nginx/sites-enabled/amadeus.alfredo.re.conf`** — legacy domain, also proxied to the same Docker containers. The Docker nginx redirects this to `www.agentemaster.com`.
 
 ### Verify
 
 ```bash
-curl -s -o /dev/null -w '%{http_code}' https://amadeus.alfredo.re
-curl -s -o /dev/null -w '%{http_code}' https://amadeus.alfredo.re/api/auth/session
+curl -s -o /dev/null -w '%{http_code}' https://www.agentemaster.com
+curl -s -o /dev/null -w '%{http_code}' https://www.agentemaster.com/api/auth/session
+curl -s -o /dev/null -w '%{http_code}' https://agentemaster.com  # should 301 → www
 ```
 
-Should return `200` and `401` respectively.
+Should return `200`, `401`, and `301` respectively.
 
 ## Git Workflow
 
-Never commit directly to `main`. Always create a feature branch, commit there, and open a PR.
+Never commit directly to `main`. Always create a feature branch, commit there, and open a PR. Prefer 1 commit per PR (squash before merging). Max 1-3 commits per PR if separation is meaningful.
