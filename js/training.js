@@ -16,18 +16,27 @@ var Training = (function () {
   var LINE = '────────────────────────────────────────────────────────';
   var ACT  = '\x01'; // action marker — terminal.js renders these lines in yellow
 
+  // ---- Geo-personalized route (default: MIA→JFK, overridden by terminal.js) ----
+  var geo = { origin: 'MIA', dest: 'JFK', originCity: 'Miami', destCity: 'Nueva York' };
+
+  function pad(code, len) {
+    while (code.length < len) code += ' ';
+    return code;
+  }
+
   // ================================================================
   //  EXERCISES
   // ================================================================
 
-  var exercises = [
-
-    // ─── EJERCICIO 1 ─────────────────────────────────────────────
-    {
+  // Exercise 1 & 2 use the geo route. Built as functions so they
+  // pick up whatever geo route is set when the exercise starts.
+  function buildExercise1() {
+    var o = geo.origin, d = geo.dest, oC = geo.originCity, dC = geo.destCity;
+    return {
       title: 'BUSQUEDA DE DISPONIBILIDAD DE VUELOS',
       scenario: [
         'Un cliente llama a la agencia y dice:',
-        '"Buenos dias, necesito viajar de Miami a Nueva York',
+        '"Buenos dias, necesito viajar de ' + oC + ' a ' + dC,
         'el 20 de marzo. Que vuelos tienen disponibles',
         'y cuanto cuestan los boletos?"',
       ].join(' '),
@@ -37,21 +46,21 @@ var Training = (function () {
             'Para buscar vuelos usamos el comando AN.\n' +
             'Se escribe asi:\n\n' +
             '  AN + fecha + origen + destino\n' +
-            '  AN   20MAR   MIA     JFK\n\n' +
+            '  AN   20MAR   ' + pad(o, 6) + d + '\n\n' +
             'Todo junto, sin espacios.\n\n' +
-            ACT + 'Busque vuelos de Miami (MIA) a Nueva York (JFK) el 20 de marzo.',
+            ACT + 'Busque vuelos de ' + oC + ' (' + o + ') a ' + dC + ' (' + d + ') el 20 de marzo.',
           hint:
-            'AN20MARMIAJFK\n\n' +
+            'AN20MAR' + o + d + '\n\n' +
             '  AN = Availability (buscar vuelos)\n' +
             '  20MAR = 20 de marzo\n' +
-            '  MIA = Miami (origen)\n' +
-            '  JFK = Nueva York (destino)',
-          validate: /^AN\d{2}[A-Z]{3}(MIA|NYC)(JFK|NYC|EWR|LGA)/,
+            '  ' + o + ' = ' + oC + ' (origen)\n' +
+            '  ' + d + ' = ' + dC + ' (destino)',
+          validate: new RegExp('^AN\\d{2}[A-Z]{3}' + o + d),
           success:
             'Correcto! Cada linea muestra un vuelo:\n' +
             '  AA 100 = aerolinea y numero de vuelo\n' +
             '  J9 Y9 K4 = clases y asientos disponibles\n' +
-            '  MIAJFK = ruta, 0800 1100 = horarios',
+            '  ' + o + d + ' = ruta, 0800 1100 = horarios',
         },
         {
           instruction:
@@ -63,13 +72,13 @@ var Training = (function () {
             'Ahora veamos las tarifas. El comando es FQD.\n' +
             'Se escribe asi:\n\n' +
             '  FQD + origen + destino + /D + fecha\n' +
-            '  FQD   MIA      JFK     /D  20MAR\n\n' +
-            ACT + 'Consulte las tarifas de MIA a JFK el 20 de marzo.',
+            '  FQD   ' + pad(o, 7) + pad(d, 6) + '/D  20MAR\n\n' +
+            ACT + 'Consulte las tarifas de ' + o + ' a ' + d + ' el 20 de marzo.',
           hint:
-            'FQDMIAJFK/D20MAR\n\n' +
+            'FQD' + o + d + '/D20MAR\n\n' +
             '  FQD = Fare Quote Display\n' +
             '  /D = fecha de viaje',
-          validate: /^FQD(MIA|NYC)(JFK|NYC)/,
+          validate: new RegExp('^FQD' + o + d),
           success:
             'Excelente! La pantalla de tarifas muestra:\n' +
             '  AL = Aerolinea\n' +
@@ -83,15 +92,17 @@ var Training = (function () {
         'Ya sabe buscar vuelos (AN) y consultar tarifas (FQD).\n' +
         'Estas son las consultas mas frecuentes en una agencia.\n\n' +
         ACT + 'Escriba TRAINING 2 para continuar con el siguiente ejercicio.',
-    },
+    };
+  }
 
-    // ─── EJERCICIO 2 ─────────────────────────────────────────────
-    {
+  function buildExercise2() {
+    var o = geo.origin, d = geo.dest, oC = geo.originCity, dC = geo.destCity;
+    return {
       title: 'CREAR UNA RESERVA COMPLETA (PNR)',
       scenario: [
         'Un cliente llama y dice:',
         '"Soy Carlos Gonzalez. Quiero reservar un vuelo de',
-        'Miami a Nueva York para el 20 de marzo en clase',
+        oC + ' a ' + dC + ' para el 20 de marzo en clase',
         'economica. Mi telefono es 305 555 1234."',
       ].join(' '),
       steps: [
@@ -99,9 +110,9 @@ var Training = (function () {
           instruction:
             'Ya aprendio este comando en el ejercicio 1.\n' +
             'Recuerde: AN + fecha + origen + destino\n\n' +
-            ACT + 'Busque vuelos de MIA a JFK el 20 de marzo.',
-          hint: 'AN20MARMIAJFK',
-          validate: /^AN\d{2}[A-Z]{3}(MIA|NYC)(JFK|NYC)/,
+            ACT + 'Busque vuelos de ' + o + ' a ' + d + ' el 20 de marzo.',
+          hint: 'AN20MAR' + o + d,
+          validate: new RegExp('^AN\\d{2}[A-Z]{3}' + o + d),
           success: 'Bien! Ahora elija un vuelo para el cliente.',
         },
         {
@@ -198,7 +209,13 @@ var Training = (function () {
         '  5. Received From            (RF)\n\n' +
         'Sin estos 5 elementos, el sistema no permite guardar.\n\n' +
         ACT + 'Escriba TRAINING 3 para el siguiente ejercicio.',
-    },
+    };
+  }
+
+  var exercises = [
+
+    buildExercise1(),
+    buildExercise2(),
 
     // ─── EJERCICIO 3 (NEW) ──────────────────────────────────────
     {
@@ -989,6 +1006,10 @@ var Training = (function () {
     exIdx   = n - 1;
     stepIdx = 0;
 
+    // Rebuild geo-personalized exercises so they use the latest route
+    exercises[0] = buildExercise1();
+    exercises[1] = buildExercise2();
+
     var ex = exercises[exIdx];
     var lines = [
       '',
@@ -1198,5 +1219,9 @@ var Training = (function () {
     },
 
     restoreProgress: restoreProgress,
+
+    setGeoRoute: function (route) {
+      geo = { origin: route.origin, dest: route.dest, originCity: route.originCity, destCity: route.destCity };
+    },
   };
 })();
