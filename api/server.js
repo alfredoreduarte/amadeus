@@ -116,7 +116,7 @@ app.post('/api/checkout', function (req, res) {
       price_data: {
         currency: 'usd',
         product_data: { name: 'AgenteMaster - Curso Completo GDS' },
-        unit_amount: 900, // $9.00
+        unit_amount: parseInt(process.env.PRICE_CENTS || '1900', 10), // $19.00
       },
       quantity: 1,
     }],
@@ -317,6 +317,72 @@ app.post('/api/progress', authMiddleware, requireAuth, function (req, res) {
 
   stmts.upsertProgress.run(req.user.id, exerciseIndex, stepIndex, JSON.stringify(validCompleted));
   res.json({ ok: true });
+});
+
+// ============================================================
+//  POST /api/contact
+//  Sends contact form emails via Resend (no database)
+// ============================================================
+app.post('/api/contact', function (req, res) {
+  var name = (req.body.name || '').trim();
+  var email = (req.body.email || '').trim().toLowerCase();
+  var message = (req.body.message || '').trim();
+
+  if (!name || !email || !message) {
+    return res.status(400).json({ error: 'Todos los campos son obligatorios' });
+  }
+  if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+    return res.status(400).json({ error: 'Email invalido' });
+  }
+  if (message.length > 5000) {
+    return res.status(400).json({ error: 'El mensaje es demasiado largo' });
+  }
+
+  var ip = req.headers['x-real-ip'] || req.ip;
+  if (!checkRateLimit('contact:' + ip, 3, 3600000)) {
+    return res.status(429).json({ error: 'Demasiados mensajes. Intenta en una hora.' });
+  }
+
+  var adminEmail = process.env.CONTACT_EMAIL || 'contacto@agentemaster.com';
+
+  // Send both emails in parallel
+  Promise.all([
+    // Visitor confirmation
+    resend.emails.send({
+      from: 'AgenteMaster <noreply@agentemaster.com>',
+      to: email,
+      subject: 'Recibimos tu mensaje - AgenteMaster',
+      html: [
+        '<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:20px;">',
+        '<h2 style="color:#4fc3f7;">AgenteMaster</h2>',
+        '<p>Hola ' + name.split(' ')[0] + ',</p>',
+        '<p>Recibimos tu mensaje y te responderemos lo antes posible.</p>',
+        '<p style="color:#888;font-size:13px;margin-top:20px;">Si no enviaste este mensaje, puedes ignorar este email.</p>',
+        '</div>',
+      ].join(''),
+    }),
+    // Admin notification
+    resend.emails.send({
+      from: 'AgenteMaster Contacto <noreply@agentemaster.com>',
+      to: adminEmail,
+      subject: 'Nuevo mensaje de contacto: ' + name,
+      html: [
+        '<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;">',
+        '<h2 style="color:#4fc3f7;">Nuevo mensaje de contacto</h2>',
+        '<p><strong>Nombre:</strong> ' + name + '</p>',
+        '<p><strong>Email:</strong> ' + email + '</p>',
+        '<p><strong>Mensaje:</strong></p>',
+        '<div style="background:#f5f5f5;padding:16px;border-radius:8px;white-space:pre-wrap;">' + message.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>',
+        '</div>',
+      ].join(''),
+      replyTo: email,
+    }),
+  ]).then(function () {
+    res.json({ sent: true });
+  }).catch(function (err) {
+    console.error('Contact email error:', err.message);
+    res.status(500).json({ error: 'Error al enviar. Intenta de nuevo.' });
+  });
 });
 
 // ============================================================

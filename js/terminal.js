@@ -47,6 +47,42 @@ document.addEventListener('DOMContentLoaded', function () {
   var dashOpen       = document.getElementById('dash-open');
   var dashNextExercise = -1;
 
+  var landingContent = document.getElementById('landing-content');
+
+  // Populate dynamic price from DATA.PRICE
+  var priceDisplay = document.getElementById('paywall-price-display');
+  if (priceDisplay) priceDisplay.innerHTML = '$' + DATA.PRICE + ' <span>USD</span>';
+  // Landing page price elements
+  var priceInlines = document.querySelectorAll('.lp-price-inline');
+  for (var pi = 0; pi < priceInlines.length; pi++) {
+    priceInlines[pi].textContent = '$' + DATA.PRICE + ' USD';
+  }
+  var priceValues = document.querySelectorAll('.lp-price-value');
+  for (var pv = 0; pv < priceValues.length; pv++) {
+    priceValues[pv].textContent = '$' + DATA.PRICE;
+  }
+
+  // Buy button in pricing section → show paywall
+  var lpBuyBtn = document.getElementById('lp-buy-btn');
+  if (lpBuyBtn) {
+    lpBuyBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      showPaywall();
+    });
+  }
+
+  // Scroll-to-top button
+  var lpScrollTop = document.getElementById('lp-scroll-top');
+  if (lpScrollTop) {
+    lpScrollTop.addEventListener('click', function (e) {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(function () {
+        if (!('ontouchstart' in window)) heroInput.focus();
+      }, 600);
+    });
+  }
+
   // Auto-focus hero input only on non-touch devices (avoids keyboard popup on mobile)
   if (!('ontouchstart' in window)) heroInput.focus();
 
@@ -587,6 +623,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function transitionToTerminal(firstCmd, firstResult) {
     hero.classList.add('fade-out');
+    if (landingContent) landingContent.classList.add('hidden');
+    document.body.classList.add('scroll-locked');
+    window.scrollTo(0, 0);
 
     setTimeout(function () {
       hero.classList.add('hidden');
@@ -776,6 +815,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // View transition helper (shared by all screen swaps)
   function switchView(from, to, animate) {
+    // Hide landing content when leaving hero for terminal/dashboard
+    if (from === hero && to !== hero && landingContent) {
+      landingContent.classList.add('hidden');
+      document.body.classList.add('scroll-locked');
+      window.scrollTo(0, 0);
+    }
+    // Show landing content when returning to hero
+    if (to === hero && landingContent) {
+      landingContent.classList.remove('hidden');
+      document.body.classList.remove('scroll-locked');
+    }
+    if (to === dashboard || to === terminal) {
+      document.body.classList.add('scroll-locked');
+    }
+
     if (animate) {
       from.classList.add('fade-out');
       setTimeout(function () {
@@ -883,6 +937,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function dashTransitionToTerminal(firstCmd, firstResult) {
     dashboard.classList.add('fade-out');
+    document.body.classList.add('scroll-locked');
     setTimeout(function () {
       dashboard.classList.add('hidden');
       dashboard.classList.remove('fade-out');
@@ -988,6 +1043,8 @@ document.addEventListener('DOMContentLoaded', function () {
         switchView(hero, dashboard, true);
       } else {
         hero.classList.add('hidden');
+        if (landingContent) landingContent.classList.add('hidden');
+        document.body.classList.add('scroll-locked');
         dashboard.classList.remove('hidden');
       }
     });
