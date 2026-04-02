@@ -798,6 +798,22 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // ============================================================
+  //  MOBILE SEND BUTTON
+  // ============================================================
+
+  var mobileSend = document.getElementById('mobile-send');
+  if (mobileSend) {
+    mobileSend.addEventListener('click', function (e) {
+      e.preventDefault();
+      var raw = input.value.trim();
+      if (!raw) return;
+      processCommand(raw);
+      input.value = '';
+      input.focus();
+    });
+  }
+
+  // ============================================================
   //  HELP PANEL
   // ============================================================
 
@@ -815,8 +831,44 @@ document.addEventListener('DOMContentLoaded', function () {
 
   terminal.addEventListener('click', function (e) {
     if (e.target.closest('#help-panel')) return;
+    if (e.target.closest('#mobile-send')) return;
     input.focus();
   });
+
+  // ============================================================
+  //  FLOATING INPUT — reposition above on-screen keyboard
+  // ============================================================
+
+  (function () {
+    if (!window.visualViewport) return;
+
+    var inputLine = document.getElementById('input-line');
+    var mql = window.matchMedia('(max-width: 600px)');
+
+    function onViewportChange() {
+      if (!mql.matches) return;
+      if (terminal.classList.contains('hidden')) return;
+
+      var vv = window.visualViewport;
+      var bottomOffset = window.innerHeight - (vv.offsetTop + vv.height);
+      inputLine.style.bottom = Math.max(0, bottomOffset) + 'px';
+
+      output.scrollTop = output.scrollHeight;
+    }
+
+    window.visualViewport.addEventListener('resize', onViewportChange);
+    window.visualViewport.addEventListener('scroll', onViewportChange);
+
+    window.addEventListener('orientationchange', function () {
+      setTimeout(onViewportChange, 300);
+    });
+
+    mql.addEventListener('change', function (e) {
+      if (!e.matches) {
+        inputLine.style.bottom = '';
+      }
+    });
+  })();
 
   // ============================================================
   //  DASHBOARD — for logged-in users
