@@ -344,8 +344,8 @@ body {
   display: block;
   width: 14px;
   height: 14px;
-  border-right: 2px solid var(--c-muted);
-  border-bottom: 2px solid var(--c-muted);
+  border-right: 2px solid var(--c-heading);
+  border-bottom: 2px solid var(--c-heading);
   transform: rotate(45deg);
   margin-top: -4px;
 }
@@ -356,7 +356,7 @@ body {
   font-weight: 400;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  color: var(--c-muted);
+  color: var(--c-heading);
 }
 
 @keyframes gentleBounce {
@@ -430,27 +430,6 @@ body {
   margin-top: 10px;
 }
 
-/* ---- Features bar ---- */
-
-.hero-features {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 56px;
-  font-family: var(--font-display);
-  font-size: 13px;
-  font-weight: 400;
-  color: #3d3d55;
-}
-
-.hero-dot {
-  width: 3px;
-  height: 3px;
-  background: #2a2a40;
-  border-radius: 50%;
-  display: inline-block;
-}
 
 /* ============================================================
    TERMINAL
@@ -853,7 +832,7 @@ body {
   font-family: var(--font-display);
   font-size: 13px;
   color: var(--c-muted);
-  text-decoration: none;
+  text-decoration: underline;
   transition: color 0.2s;
 }
 
@@ -863,29 +842,43 @@ body {
 
 /* ---- Disclaimer footer (hero) ---- */
 
-#hero { position: relative; }
+#hero {
+  position: relative;
+  min-height: calc(100dvh - 80px);
+}
+
+.hero-empezar {
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: .1rem;
+  text-transform: uppercase;
+  margin-bottom: 0;
+}
 
 .hero-cta {
   color: var(--c-action);
   opacity: 0.7;
+  letter-spacing: .1rem;
+  text-transform: uppercase;
   margin-top: 4px;
+  margin-bottom: 0;
 }
 
 .site-disclaimer {
   position: absolute;
-  bottom: 16px;
+  top: 12px;
   left: 24px;
   right: 24px;
   text-align: center;
   font-family: var(--font-display);
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: 11px;
+  line-height: 1.4;
   color: #8585a0;
-  max-width: 480px;
-  margin: 0 auto;
+  white-space: nowrap;
 }
 
 .site-disclaimer p { margin: 0; }
+.site-disclaimer .mobile-break { display: none; }
 
 /* ---- Paywall disclaimer ---- */
 
@@ -914,6 +907,7 @@ body {
   .hero-title { margin-bottom: 6px; }
 
   .hero-subtitle { margin-bottom: 20px; }
+  .hero-empezar, .hero-cta { margin-bottom: 0; }
 
   .decoder { margin-bottom: 16px; }
   .decoder-command { padding-bottom: 22px; }
@@ -929,14 +923,6 @@ body {
   .hero-prompt { font-size: 18px; }
 
   .hero-hint { margin-top: 8px; }
-
-  .hero-features {
-    flex-direction: column;
-    gap: 4px;
-    margin-top: 24px;
-  }
-
-  .hero-dot { display: none; }
 
   /* Terminal on mobile */
   #terminal { font-size: 13px; padding: 8px 10px; }
@@ -969,24 +955,24 @@ body {
   /* Collapse non-essential elements when keyboard is open */
   .hero-badge,
   .hero-title,
-  .hero-subtitle,
-  .hero-features {
+  .hero-subtitle {
     max-height: 200px;
     transition: max-height 0.25s ease, margin 0.25s ease, opacity 0.15s ease;
     overflow: hidden;
   }
 
   .site-disclaimer {
-    bottom: 8px;
+    top: 8px;
     left: 16px;
     right: 16px;
-    font-size: 10px;
+    font-size: 9px;
   }
+
+  .site-disclaimer .mobile-break { display: inline; }
 
   #hero:focus-within .hero-badge,
   #hero:focus-within .hero-title,
   #hero:focus-within .hero-subtitle,
-  #hero:focus-within .hero-features,
   #hero:focus-within .hero-login,
   #hero:focus-within .site-disclaimer {
     max-height: 0;
@@ -1341,6 +1327,7 @@ body {
 
 .lp-section:first-child {
   border-top: none;
+  padding-top: 24px;
 }
 
 .lp-heading {
